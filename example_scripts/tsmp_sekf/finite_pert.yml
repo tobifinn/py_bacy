@@ -1,0 +1,33 @@
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/DA'
+COSMO:
+    # [bool] If COSMO analysis should be created by a symbolic link
+    analysis: True
+    # [str] Glob string to find COSMO background files
+    bg_files: '*_ana'
+
+CLM:
+    # [bool] If CLM analysis should be created by a symbolic link
+    analysis: True
+    # [str] Glob string to find CLM background files. Is only a placeholder!
+    bg_files: ''
+    # [str] Path to the utilities
+    utils_path: '/p/scratch/chbn29/hbn29p/data/tsmp/runs/utilities'
+    # Settings for perturbations
+    pert:
+        # [int] CLM levels, which should be perturbed
+        levels:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+        # [float] perturbation strength in mm3/mm3
+        scale: 0.01
+        # [bool] If random perturbations should be created
+        random: False
+
+# [str] Path to model program, placeholder!
+program: ''

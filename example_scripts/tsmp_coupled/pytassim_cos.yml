@@ -1,0 +1,50 @@
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/DA'
+# [int] Number of grid points per chunk
+chunksize: 10000
+# [float] localization radii in meters / ln(hPa)
+loc_radius:
+    - 50000
+    - 0.3
+# [float] Inflation factor for ensemble weights
+inf_factor: 1.2
+# [str] COSMO Variables, which should be changed
+assim_vars:
+    - 'U'
+    - 'V'
+    - 'T'
+    - 'QV'
+    - 'QC'
+    - 'PP'
+    - 'FOR_E'
+    - 'FOR_D'
+    - 'QI'
+    - 'QR'
+    - 'QS'
+    - 'RHO_SNOW'
+    - 'T_2M'
+    - 'RELHUM_2M'
+# [str] Glob string to find COSMO background files
+bg_files: '*_ana'
+# [bool] If smoother mode should be used or not
+smoother: True
+# Placeholder needed for replacement dir; is not used
+program: ''
+# Section for observations
+obs:
+    # [str] Glob string to find first guess files
+    fg_files: '*_fg'
+    # [str] Path to the utilities
+    utils_path: '/p/scratch/chbn29/hbn29p/data/tsmp/runs/utilities'
+    # [str] Path to the observations
+    path: '/p/scratch/chbn29/hbn29p/data/tsmp/runs/obs/vr1/t2m_obs_synop_0_5.nc'
+    # [str] This is the first time delta of the observations
+    td_start: '1 second'
+    # [str] This is the last time delta of the observations
+    td_end: '1 hour'
+    # [str] Path to the temporal localization matrix, if null, temporal
+    # localization is deactivated
+    path_loc_mat: null
+    # [bool] If the observations should be noised, useful for smoothing
+    # approaches with overlapping windows
+    stochastic: True

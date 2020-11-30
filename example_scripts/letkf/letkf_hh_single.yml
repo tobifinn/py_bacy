@@ -1,0 +1,31 @@
+# [str] Path where the bin is stored
+program: '/mnt/lustre01/pf/zmaw/u300636/cosmo_hh/code/3dvar/build/LINUX64.ifort-omp/bin'
+# [str] The template stored in this path is used
+template: '/home/zmaw/u300636/cosmo_hh/code/py_bacy/templates/letkfrun_hh_single_template'
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/letkf'
+# [bool] If the radar should be assimilated.
+# If this is activated radar_refl and/or radar_vel should be also activated.
+radar: False
+# [bool] If the radar reflectivity should be assimilated
+radar_refl: False
+# [bool] If the radar radial velocity should be assimilated
+radar_vel: False
+# [str] Variables which should be excluded in the fof file
+# Possibilities:
+# T, U, V, RH, HEIGHT
+# State: 7, flags: 32, check: 14
+exclude:
+  - 'T'
+  - 'RH'
+  - 'HEIGHT'
+# [str: float] Bias correction
+# The value of the bias correction for a given variable within the fof file.
+bias_corr:
+  T: -0.1
+  RH: 0.01
+  HEIGHT: 2
+
+PARENT:
+  EXP_PATH: ''
+  MODEL: 'cosmo_hh'

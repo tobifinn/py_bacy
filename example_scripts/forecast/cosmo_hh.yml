@@ -1,0 +1,11 @@
+# [str] Path where the bin is stored
+program: '/home/zmaw/u300636/cosmo_hh/code/cosmo'
+# [str] The template stored in this path is used
+template: '/home/zmaw/u300636/cosmo_hh/code/py_bacy/templates/lmrun_hh_template'
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/cosmo'
+# [bool] If local heat nudging should be used
+lhn: False
+# [bool] If the model should be verified automatically with the observations.
+verify: False
+

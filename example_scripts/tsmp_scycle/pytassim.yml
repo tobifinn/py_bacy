@@ -1,0 +1,42 @@
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/DA'
+# [float] The localization radius in meters
+loc_radius: 50000
+# [float] Inflation factor for ensemble weights
+inf_factor: 1.2
+# [str] Glob string to find first guess files
+fg_files: '*_fg'
+# [str] Path to the observations
+obs_path: '/p/scratch/chbn29/hbn29p/data/tsmp/runs/obs/vr1/t2m_obs_synop_0_5.nc'
+# [str] Path to the utilities
+utils_path: '/p/scratch/chbn29/hbn29p/data/tsmp/runs/utilities'
+
+# Settings for COSMO
+COSMO:
+    # [str] COSMO Variables, which should be changed
+    assim_vars:
+        - 'U'
+        - 'V'
+        - 'T'
+        - 'QV'
+        - 'QC'
+        - 'PP'
+        - 'QV_S'
+        - 'T_S'
+        - 'FOR_E'
+        - 'FOR_D'
+        - 'QI'
+        - 'QR'
+        - 'QS'
+        - 'RHO_SNOW'
+    # [str] Glob string to find COSMO background files
+    bg_files: '*_ana'
+
+# Settings for CLM
+CLM:
+    # [str] CLM Variables, which should be changed
+    assim_vars:
+        - 'H2OSOI_LIQ'
+        - 'T_SOISNO'
+# Placeholder needed for replacement dir; is not used
+program: ''

@@ -1,0 +1,19 @@
+# [str] Path where the bin is stored
+program: '/mnt/lustre01/pf/zmaw/u300636/cosmo_hh/code/3dvar/build/LINUX64.ifort-omp/bin'
+# [str] The template stored in this path is used
+template: '/home/zmaw/u300636/cosmo_hh/code/py_bacy/templates/letkfrun_hh_template'
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/letkf'
+# [str] This cdo grid is used with remapnn to convert the analysis to the right
+# grid. If this is Null the grid is not remapped.
+CDO_GRID: '/home/zmaw/u300636/cosmo_hh/code/py_bacy/utilities/grid_cosmo_hh'
+# [str] The path to the HHL file. This has to be appended to the laf file.
+hhl_file: '/work/um0203/u300636/cosmo_hh/const_para/COSMO_HH_HHL_002_051_001.grb2'
+# [bool] If the radar should be assimilated.
+# If this is activated radar_refl and/or radar_vel should be also activated.
+radar: False
+# [bool] If the radar reflectivity should be assimilated
+radar_refl: False
+# [bool] If the radar radial velocity should be assimilated
+radar_vel: False
+

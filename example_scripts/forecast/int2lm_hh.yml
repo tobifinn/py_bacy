@@ -1,0 +1,25 @@
+# [str] Path where the bin is stored
+program: '/home/zmaw/u300636/cosmo_hh/code/int2lm_devel'
+# [str] The template stored in this path is used
+template: '/home/zmaw/u300636/cosmo_hh/code/py_bacy/templates/runicon2de_template'
+# [str] The log files are stored in this path
+log_dir: '%EXP_LOG%/int2lm'
+# [bool] If the analysis file should be interpolated from the coarse model
+int_analysis: True
+# [str] Path to the data which should be used as boundary data
+boundary_path: '/work/um0203/cosmo_hh/icon_eu'
+# [str] Path to the external parameter dir for the coarse model
+coarse_extpar_dir: '/work/um0203/u300636/cosmo_hh/const_para'
+# [str] Path to the external parameter file for the cosmo model
+cosmo_extpar: '/home/zmaw/u300636/cosmo_hh/extpara/extpara_cosmohh_004_final.nc'
+# [str] Path to the constant parameters for icon as coarse model
+const_path: '/work/um0203/u300636/cosmo_hh/const_para/iefff00000000c'
+# [str] The icon resolution of the ensemble runs
+RB_ENS: 'R02B07'
+# [str] The icon resolution of the deterministic run
+RB_DET: 'R03B08'
+# [str] The number of the ensemble runs for icon
+NRB_ENS: '0028'
+# [str] The number of the deterministic run for icon
+NRB_DET: '0027'
+
