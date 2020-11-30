@@ -135,7 +135,7 @@ end_input_sat
 cat > INPUT_IO  << end_input_io
  &IOCTL
   lasync_io=.FALSE,
-  ngribout=3,
+  ngribout=2,
   yform_read='ncdf',
   l_ke_in_gds=.FALSE.,
   yncglob_institution='Meteorologisches Insitut, Universität Hamburg',
