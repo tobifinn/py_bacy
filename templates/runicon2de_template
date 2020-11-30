@@ -1,0 +1,231 @@
+#!/bin/ksh
+#
+# The %NAME%_$1_$2 Job
+#export GRIB_DEFINITION_PATH=/home/zmaw/u300636/cosmo_hh/code/utilities/build/grib_api/definitions.edzw-1.18.0-3:${GRIB_DEFINITION_PATH}
+#
+rm -f %NAME%_$1_$2_job
+#################################################
+# number of processors
+#################################################
+
+
+NPX=6
+NPY=4
+NPIO=0
+CPN=24                   # cores per node
+NP1=`expr $NPX \* $NPY`
+NP=`expr $NP1 + $NPIO`
+N1=`expr $NP + $CPN - 1`
+NODES=`expr $N1 \/ $CPN` # number of physical nodes
+
+###
+
+## include det run?
+## settings for initial/climatological fields 
+DET=$1
+START_ENS=$2
+END_ENS=$3
+
+#DIR_INPUT: directory where symbolic links point to
+DATE=%DATE%
+INT2LM_DIR=%PROGRAM_DIR%
+#INT2LM_DIR=/home/zmaw/u300636/cosmo_hh/code/int2lm_devel
+#LM_EXT=/home/zmaw/u300636/cosmo_hh/extpara
+INPUT_DIR=%INPUT_DIR%
+OUTPUT_DIR=%OUTPUT_DIR%
+LOG_DIR=%LOG_DIR%
+#LOG_DIR=/home/zmaw/u300636/cosmo_hh/experiments/…/logs/int2lm
+
+## begin of LOOP
+I=$START_ENS
+N_LOOP=$END_ENS
+if [ $DET = true ]; then
+  ((N_LOOP=N_LOOP+1))
+fi
+until [[ $I -gt $N_LOOP ]]; do
+  if [ $I -ge 10 ]; then
+    Iens=0${I}
+  else
+    Iens=00${I}
+  fi
+  
+  if [ $DET = true -a $I -eq $N_LOOP ]; then
+    edir=det
+    EPS=.FALSE.
+    RB=%RB_DET%
+    NRB=%NRB_DET%
+  else
+    edir=ens${Iens}
+    EPS=.TRUE.
+    RB=%RB_ENS%
+    NRB=%NRB_ENS%
+  fi
+  work_dir=$INPUT_DIR/${edir}
+  IN_DIR=$work_dir
+  LM_DIR=$OUTPUT_DIR/${edir}
+  IN_EXT=$work_dir
+  LM_EXT=$work_dir
+
+FILENAME_GRID=icon_grid_${NRB}_${RB}_N02.nc
+EXTPAR_COARSE=icon_extpar_${NRB}_${RB}_N02_20150805.nc
+cd ${work_dir}
+
+#################################################
+# cat together the INPUT-file
+#################################################
+
+cat > INPUT << end_input
+ &CONTRL
+  ydate_ini='$DATE', ydate_bd='$DATE',
+  hstart=0.0, hstop=%HSTOP%, hincbound=1.0,
+  linitial=%LINITIAL%,
+  lboundaries=.TRUE.,
+  nprocx=$NPX, nprocy=$NPY, nprocio=$NPIO, lreorder=.FALSE.,
+  yinput_model='ICON',
+  lfilter_oro=.true., lfilter_pp=.true.,
+  eps_filter=0.1, norder_filter=5,
+  ilow_pass_oro=4, ilow_pass_xso=5,
+  lasync_io=.false., lreorder=.false., lroutine=.false., ltime_mean=.true.,
+  itype_profiles_vert_interp=2,
+  itype_balance_pp=2,
+  itype_fast_waves_lm=2,
+  lprog_prrcon_prscon=.FALSE.,
+  lmultlay_deepsoil_clim_hcorr=.TRUE.,
+  lmulti_layer_in=.true., lmulti_layer_lm=.true.,
+  lprog_qi=.true., lprog_qr_qs=.true., lprog_rho_snow=.false.,
+  lforest=.true.,
+  lsso=.false., lt_cl_corr=.false., luvcor=.true.,
+  lseaice=.true., lvertwind_ini=.true., lvertwind_bd=.false.,
+  rxso_mask=625.0,
+  itype_albedo=1, idbg_level=10,
+  l_read_precalc=.FALSE.,
+  lcheck_uuidOfHGrid=.FALSE.,
+  leps_bc=$EPS,
+  lt_cl_corr=.true.,
+ /
+ &GRID_IN
+  kcontrol_fi =15, ke_soil_in=7,
+  !ke_in_tot=90,
+  ke_in_tot=60,
+  yicon_grid_cat='$IN_EXT',
+  yicon_grid_lfn='${FILENAME_GRID}'
+ /
+ &LMGRID
+  startlat_tot=-0.96, startlon_tot=-0.743,
+  pollat=36.063, pollon=-170.4150,
+  dlat=0.00400, dlon=0.00400,
+  ielm_tot=500, jelm_tot=300, kelm_tot=50,
+  ke_soil_lm=7,
+  lanalyt_calc_t0p0=.TRUE.,
+  ivctype=2, irefatm=1,
+  !delta_t=75.0, h_scal=10000.0,
+  lnewVGrid=.FALSE.,
+ /
+ &DATABASE
+ /
+ &DATA
+  ie_ext=600, je_ext=400,
+  ylmext_lfn='%EXTPAR_COSMO%',
+  ylmext_cat='$LM_EXT',
+  ylmext_form_read='ncdf',
+  yicon_input_prefix='iefff',
+  yinext_lfn='${EXTPAR_COARSE}',
+  yin_hhl='%CONST_COARSE%', ! file is searched within yinext_cat
+  yinext_form_read='ncdf',
+  yinext_cat='$IN_EXT',
+  yin_form_read='apix',
+  yin_cat='$IN_DIR',
+  ylm_cat='$LM_DIR',
+  ylm_hhl='COSMO_HH_HHL_002_051_001.grb2'
+  ylm_form_write='api2',
+  nprocess_ini = 134, nprocess_bd = 135,
+  nl_soil_in=2, nl_soil_lm=2,
+  l_ke_in_gds=.TRUE.,
+ /
+ &PRICTR
+  igp_tot = 36, 40, 48, 44, 48, 85, 77
+  jgp_tot = 30, 94, 38, 26, 26, 96, 12
+  lchkin=.TRUE., lchkout=.TRUE.,
+  lprps=.FALSE.,
+ /
+ &EPSCTL
+  iepsmem_bc=${I},
+  iepstyp_bc=3,
+  iepstot_bc=%N_ENS%,
+ /
+end_input
+
+((I=I+1))
+done
+
+cd ..
+
+##SBATCH --partition=compute
+##SBATCH --nodes=$NODES
+##SBATCH --ntasks-per-node=$CPN
+#################################################
+# run the program
+#################################################
+
+cat > %NAME%_$1_$2_job  << ****
+#!/bin/sh
+#SBATCH --job-name=%NAME%
+#SBATCH --partition=compute
+#SBATCH --nodes=$NODES
+#SBATCH --ntasks-per-node=$CPN
+#SBATCH --time=06:00:00
+#SBATCH --account=um0203
+#SBATCH --output=$LOG_DIR/out_%j.out
+#SBATCH --error=$LOG_DIR/err_%j.out
+
+#ulimit -s 2000000
+ulimit -s unlimited
+
+source /sw/rhel6-x64/etc/profile.mistral
+source /home/zmaw/u300636/cosmo_hh/code/load_modules_bullmx
+
+export LIBDWD_FORCE_CONTROLWORDS=1
+export GRIB_DEFINITION_PATH=/home/zmaw/u300636/cosmo_hh/code/utilities/build/grib_api/share/grib_api/definitions
+export GRIB_SAMPLES_PATH=${INT2LM_DIR}/1.13.1/samples/
+
+
+I=$START_ENS
+I_END=$N_LOOP
+DET=$DET
+until [[ \$I -gt \$I_END ]]; do
+  if [ \$I -ge 10 ]; then
+    Iens=0\${I}
+  else
+    Iens=00\${I}
+  fi
+  if [ \$DET = true -a \$I -eq \$I_END ]; then
+    edir=det
+  else
+    edir=ens\${Iens}
+  fi
+  work_dir=$INPUT_DIR/\${edir}
+  cd \${work_dir}
+  pwd
+  #rm -f YUCHKDAT YUTIMING YUDEBUG OUTPUT
+  ##
+  echo "processing " \${edir}
+
+  srun --cpu_bind=cores -l --propagate=STACK --distribution=block:cyclic $INT2LM_DIR/tstint2lm
+
+  rc=\$?
+  if [[ \$rc -ne 0 ]]; then
+    exit \$rc
+  fi
+
+  #################################################
+  # cleanup
+  #################################################
+
+  rm INPUT
+  ((I=I+1))
+done
+## end of LOOP
+
+****
+chmod u+x %NAME%_$1_$2_job
+sbatch %NAME%_$1_$2_job | grep -o '[0-9]*' >> pid_file

@@ -1,0 +1,682 @@
+#!/bin/ksh
+#
+# The %NAME%_$1_job.sh
+#
+#
+#################################################
+# General settings
+#################################################
+
+ens_mem=$1
+n_runs=%N_RUNS%
+
+exp_id=%EXP_ID%
+ini_date=%COS_DATE_INI%
+h_start=%H_START%
+h_int=%H_INT%
+s_ana=%S_ANA%
+cos_dt=%COS_DT%
+cos_nstart=$(($h_start*3600/$cos_dt))
+cos_bg_step=$(($s_ana/$cos_dt+$cos_nstart))
+cos_hinc=$(($h_int+h_start))
+
+cos_out_start=`echo $h_start+1 | bc`
+cos_fg_start=`echo $h_start+0.25 | bc`
+cos_out_end=`echo $cos_hinc+1 | bc`
+
+clm_dt=%CLM_DT%
+clm_start_ymd=%CLM_START_YMD%
+clm_start_sec=%CLM_START_SEC%
+clm_steps=%CLM_STEPS%
+clm_out_ts=%CLM_OUT_TS%
+
+oas_int=$(($h_int*3600+$clm_dt))
+
+account=%ACCOUNT%
+partition=%PARTITION%
+
+
+# wall clock time
+wall_clock_time_tot=$((2*$h_int*$n_runs))
+wall_clock_time_tot=$(( $wall_clock_time_tot > 20 ? $wall_clock_time_tot : 20 ))
+wall_clock_time_h=$(($wall_clock_time_tot/60))
+wall_clock_time_h=`echo ${wall_clock_time_h} | awk '{printf "%.0f", $0;}'`
+wall_clock_time_min=$(($wall_clock_time_tot-$wall_clock_time_h*60))
+wall_clock_time_h=`echo ${wall_clock_time_h} | awk '{printf "%02d", $0;}'`
+wall_clock_time_min=`echo ${wall_clock_time_min} | awk '{printf "%02d", $0;}'`
+
+
+# DIR settings
+
+ens_dir=`echo ${ens_mem} | awk '{printf "ens%03d", $0;}'`
+SCRIPTDIR=%RUN_DIR%/input/
+WORKDIR=%RUN_DIR%/input/${ens_dir}
+INIDIR=%RUN_DIR%/input/${ens_dir}
+OUTPUT=%RUN_DIR%/output/${ens_dir}
+BD_DIR=%COS_FORC_DIR%
+LOGDIR=%LOG_DIR%
+
+
+if [ ! -d ${WORKDIR} ] ; then
+  mkdir -p ${WORKDIR}
+fi
+if [ ! -d ${OUTPUT} ] ; then
+  mkdir -p ${OUTPUT}
+fi
+
+rm -f ${SCRIPTDIR}/%NAME%_${ens_mem}_job.sh
+
+#
+# PROCESS Settings
+#
+
+nprocspernode=48
+NPX=6
+NPY=7
+NPIO=0
+NP1=`expr $NPX \* $NPY`
+NP=`expr $NP1 + $NPIO`
+N1=`expr $NP + $nprocspernode - 1`
+NODES=`expr $N1 \/ $nprocspernode`
+
+
+cd ${WORKDIR}
+
+
+#################################################
+# cat together files
+#################################################
+
+cat > INPUT_ORG << end_input_org
+ &LMGRID
+  startlat_tot = -1.09, startlon_tot = -1.139,
+  pollat       = 41.5,          pollon = -171.0,
+  dlat         = 0.025,           dlon = 0.025,
+  ie_tot       = 98, je_tot = 109,     ke_tot = 50,
+ /
+ &RUNCTL
+  hstart = ${h_start},   hstop  = ${cos_hinc},    dt = ${cos_dt},
+  ydate_ini='${ini_date}',
+  nprocx = ${NPX},  nprocy = ${NPY},   nprocio = ${NPIO},
+  nboundlines = 4,
+  lphys      = .TRUE.,   luse_rttov    = .FALSE.,  luseobs = .FALSE., leps = .FALSE.,
+  lreorder   = .FALSE.,  lreproduce    = .TRUE.,   itype_timing = 0,
+  ldatatypes = .FALSE.,  ltime_barrier = .FALSE.,  ncomm_type=3,
+  idbg_level = 20, lartif_data=.FALSE.,
+ /
+ &TUNING
+  ! values from Annika Schomburg's dx=400 m runs + operational COSMO-DE values for q_crit, mu_rain, rain_n0_factor
+  clc_diag  =   0.75,
+  pat_len   =  500.0,
+  tur_len   = 70.0,
+  rlam_heat =   1.0,
+  rlam_mom  =   0.0,
+  rat_lam   =   1.0,
+  rat_can   =   1.0,
+  rat_sea   =  20.0,
+  c_lnd     =   2.0,
+  c_soil    =   1.0,
+  c_sea     =   1.5,
+  z0m_dia   =   0.2,
+  crsmin    = 150.0,
+  wichfakt  =   0.0,
+  qc0       =   0.0002,
+  q_crit    =   1.6,
+  mu_rain   =   0.5,
+  rain_n0_factor = 0.1,
+ /
+end_input_org
+
+cat > INPUT_SAT  << end_input_sat
+ &SATCTL
+ /
+end_input_sat
+
+cat > INPUT_IO  << end_input_io
+ &IOCTL
+  lasync_io=.FALSE,
+  ngribout=3,
+  yform_read='ncdf',
+  l_ke_in_gds=.FALSE.,
+  yncglob_institution='Meteorologisches Insitut, Universität Hamburg',
+  yncglob_title='TSMP COSMO',
+  yncglob_source='tsmp',
+  yncglob_contact='Tobias Sebastian Finn tobias.sebastian.finn@uni-hamburg.de',
+  yncglob_project_id='for2131',
+  yncglob_references='Doctoral thesis Tobias Finn'
+  yncglob_experiment_id='$exp_id',
+  ncglob_realization=1,
+  ydir_restart='${INIDIR}',
+  nhour_restart=100,100,100,
+  ytunit_restart='d',
+ /
+ &DATABASE
+ /
+ &GRIBIN
+  lan_t_so0  = .TRUE., lan_t_cl  = .TRUE., lan_w_cl   = .TRUE., lan_vio3     = .TRUE.,
+  lan_hmo3   = .TRUE., lan_plcov = .TRUE., lan_lai    = .TRUE., lan_rootdp   = .TRUE.,
+  lan_t_snow = .TRUE., lan_w_i   = .TRUE., lan_w_snow = .TRUE., lan_rho_snow = .TRUE.,
+  hincbound  = 3.0,
+  lchkini    = .FALSE., lchkbd    = .FALSE., lbdana     = .FALSE.,
+  lana_qi    = .TRUE., llb_qi    = .TRUE., lana_rho_snow=.TRUE., lana_qr_qs = .TRUE.,
+  llb_qr_qs  = .TRUE., lana_qg   = .FALSE., llb_qg     = .FALSE.,
+  ydirini    = '$INIDIR',
+  ydirbd     = '$BD_DIR',
+  ytunitbd   = 'd',
+ /
+ &GRIBOUT
+    ngrib=${cos_bg_step},
+    lanalysis=.false.,
+    lcheck=.false.,
+    yform_write='ncdf',
+    ytunit='d',
+    lwrite_const=.false.,
+    l_p_filter=.true.,
+    l_z_filter=.true.,
+    ysystem='file',
+    ysuffix='_ana',
+    ydir='${OUTPUT}',
+    yvarml='U         ','V         ','W         ','T         ',
+           'QV        ','QC        ','PP        ','T_SNOW    ',
+           'W_I       ','QV_S      ','W_SNOW    ','T_S       ',
+           'T_SO      ','W_SO      ','FRESHSNW  ','FOR_E     ',
+           'FOR_D     ','QI        ','QR        ','QS        ',
+           'RHO_SNOW  ','Z0        ','HSURF     ','FR_LAND   ',
+           'SOILTYP   ','PLCOV     ','LAI       ','ROOTDP    ',
+           'VIO3      ','HMO3      ','T_2M      ','RELHUM_2M ',
+           'TKE       '
+ /
+ &GRIBOUT
+    hcomb=${cos_fg_start},${cos_out_end},1.,
+    lanalysis=.false.,
+    lcheck=.false.,
+    yform_write='ncdf',
+    ytunit='f',
+    lwrite_const=.false.,
+    l_p_filter=.true.,
+    l_z_filter=.true.,
+    ysystem='file',
+    ysuffix='_fg',
+    ydir='${OUTPUT}',
+    yvarml='T         ','PS        ','T_S       ','QV_S      ',
+           'U_10M     ','V_10M     ','T_2M      ','TD_2M     ',
+           'TMIN_2M   ','TMAX_2M   ','VMAX_10M  ','TCM       ',
+           'TCH       ','RELHUM_2M ','AUMFL_S   ','AVMFL_S   ',
+           'ASHFL_S   ','ALHFL_S   ',
+ /
+end_input_io
+
+cat > INPUT_DYN << end_input_dyn
+ &DYNCTL
+  l2tls       = .TRUE.,
+  irunge_kutta= 1,       irk_order  = 3,         iadv_order  = 5,
+  y_scalar_advect = 'BOTT2',
+  betasw      = 0.4,    epsass      = 0.15,
+  hd_corr_q_bd=0.0, hd_corr_t_bd=0.75, hd_corr_u_bd=0.75, hd_corr_p_bd=0.75,
+  hd_corr_q_in=0.0, hd_corr_t_in=0.0,  hd_corr_u_in=0.1,  hd_corr_p_in=0.0,
+  hd_dhmax    = 50.,   itype_hdiff = 2,       lcond     = .TRUE., lspubc    = .TRUE.,
+  rlwidth     = 12000.0, itype_lbc_qrsg = 1,
+  rdheight    = 14000., xkd         = 0.1,
+! from operational COSMO-NRW script:
+  itype_outflow_qrsg=1, nrdtau = 5,
+  ldyn_bbc=.TRUE., ldiabf_lh=.TRUE.,
+  lexpl_lbc=.TRUE.,
+  itype_bbc_w=2,
+ /
+end_input_dyn
+
+cat > INPUT_TRACER << end_input_tracer
+ &TRACERCTL
+      ntracer = 2,
+! ltracer must have ntracer lines
+!                   adv ,hdiff, turb, conv, var1, mfc , clm
+      ltracer_in =   1  ,  0  ,  1  ,  1  ,  0  ,  0  ,  0 ,
+                     0  ,  0  ,  0  ,  0  ,  0  ,  0  ,  0 ,
+ /
+end_input_tracer
+
+cat > INPUT_PHY << end_input_phy
+ &PHYCTL
+    lgsp=.TRUE.,
+      lprogprec=.TRUE.,
+      ltrans_prec=.TRUE.,
+      itype_gscp=4,
+    lrad=.TRUE.,
+      nradcoarse=1,
+      lradf_avg=.FALSE.,
+      hincrad=0.25,
+      lforest=.TRUE.,
+    ltur=.TRUE.,
+      ninctura=1,
+      lexpcor=.TRUE.,
+      ltmpcor=.FALSE.,
+      lprfcor=.FALSE.,
+      lnonloc=.FALSE.,
+      lcpfluc=.FALSE.,
+      limpltkediff=.TRUE.,
+      itype_turb=3,
+      imode_turb=1,
+      itype_tran=2,
+      imode_tran=1,
+      itype_wcld=2,
+      icldm_rad =4,
+      icldm_turb=2,
+      icldm_tran=0,
+      itype_synd=2,
+    lsoil=.TRUE.,
+      itype_evsl=2,
+      itype_trvg=2,
+      lmulti_layer=.TRUE.,
+      lmelt=.TRUE.,
+      lmelt_var=.TRUE.,
+      ke_soil = 7,
+      czml_soil = 0.005, 0.02, 0.06, 0.18, 0.54, 1.62, 4.86, 14.58,
+    lconv=.TRUE.,
+      nincconv=10,
+      itype_conv=3,
+      lcape=.FALSE.,
+!   lsso=.FALSE.,
+!     ltkesso=.TRUE.,
+ /
+end_input_phy
+
+cat > INPUT_DIA << end_input_dia
+ &DIACTL
+  itype_diag_gusts=4,
+  n0meanval=12000, nincmeanval=12000,
+  lgplong=.FALSE., lgpshort=.FALSE., lgpspec=.FALSE.,
+  n0gp=0,      hincgp=1.0,
+ /
+end_input_dia
+
+cat > INPUT_EPS << end_input_eps
+ &EPSCTL
+  iepsmem=0, iepstyp=55, iepstot=40,
+ /
+end_input_eps
+
+cat > INPUT_ASS << end_input_ass
+ &NUDGING
+  lnudge  =.false.,
+ /
+end_input_ass
+
+cat > namcouple << end_oas
+# Oasis reads in this file at run-time.
+# Prepared for the SVA System (COMSO,  und CLM)
+# Prabhakar Shrestha (pshrestha@uni-bonn.de)
+# suggestions (oasishelp@cerfacs.fr).
+#
+# Any line beginning with # is ignored. Blank lines are not allowed.
+#
+ \$SEQMODE
+# This keyword concerns the coupling algorithm. Put here the maximum number
+# of fields that have to be, at one particular coupling timestep,
+# exchanged sequentially in a given order.
+             2
+ \$END
+#########################################################################
+ \$CHANNEL
+# The communication technique you want to use.
+# Choices are MPI1 or MPI2, NONE.
+# - if you want to use MPI1 or MPI2 message passing, you must write
+# MPI1 or MPI2 (+ NOBSEND if you do not want to use the default MPI_BSend)
+# on one line
+# + one line per model giving for the model the total number of procs,
+# the number of procs implied in the coupling and, for MPI2 only, an
+# optional launching argument
+#
+  MPI1 NOBSEND
+   42 42
+   6 6
+ \$END
+#########################################################################
+ \$NFIELDS
+# Put the number of fields exchanged by OASIS.
+# If it is bigger than twice the number of fields exchanged, put also on
+# the same line the maximum number of prism_def_var_proto
+# called by one component model in the coupled system (optional).
+# For the definition of the fields, see under $STRINGS keyword
+#
+           21
+ \$END
+#########################################################################
+ \$JOBNAME
+# This is an acronym for this run (3 characters).
+  TR3
+ \$END
+##########################################################################
+ \$NBMODEL
+# This gives you the number of models running in this experiment +
+# their names (6 characters) + , in option, the maximum Fortran unit
+# number used by each model; 1024 will be used if none are given.
+#
+   2  oascos  oasclm 99 99
+ \$END
+###########################################################################
+ \$RUNTIME
+# This gives you the total simulated time for this run in seconds
+#
+  ${oas_int}
+ \$END
+###########################################################################
+ \$INIDATE
+# This is the initial date of the run. This is important only if
+# FILLING analysis is used for a coupling field in the run.
+# The format is YYYYMMDD.
+  ${clm_start_ymd}
+ \$END
+###########################################################################
+ \$MODINFO
+# Indicates if a header is encapsulated within the field brick
+# in binary restart files for all communication techniques,
+# (and for coupling field exchanges for PIPE, SIPC and GMEM.
+# (YES or NOT)
+  NOT
+ \$END
+###########################################################################
+ \$NLOGPRT
+# Index of printing level in output file cplout: 0 = no printing
+#  1 = main routines and field names when treated, 2 = complete output
+  0
+ \$END
+###########################################################################
+ \$CALTYPE
+# Calendar type :  0      = 365 day calendar (no leap years)
+#                  1      = 365 day, or 366 days for leap years, calendar
+#                  n (>1) = n day month calendar
+# This is important only if FILLING analysis is used for a coupling
+# field in the run.
+#
+  30
+ \$END
+###########################################################################
+ \$STRINGS
+#
+# The above variables are the general parameters for the experiment.
+# Everything below has to do with the fields being exchanged.
+#
+############################################################################
+#                      COSMO  <<--->>> CLM
+#                      --------------------
+# Field 1 :
+#
+#   First line:
+# 1) and 2) Symbolic names for the field before and after interpolation
+#           (8 characters maximum)
+# 3) Index of field in cf_name_table.txt
+# 4) Exchange frequency for the field in seconds (here 0.5 hours)
+# 5) Number of analysis to be performed
+# 6) Restart input NetCDF file names
+# 7) Field status (EXPORTED, AUXILARY, IGNORED, EXPOUT, IGNOUT, INPUT, OUTPUT)
+#
+#for ignout, the grid and partioning of source and target should be identical
+#S_MD1_01  R_MD2_01  10 7200  0  fdmd1.nc IGNOUT
+#gmd1 gmd2  LAG=0 SEQ=1
+#
+COSTEMPE  CLMTEMPE  10 ${clm_dt}  2  cos01.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSUWIND  CLMUWIND  10 ${clm_dt}  2  cos02.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSVWIND  CLMVWIND  10 ${clm_dt}  2  cos03.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSSPWAT  CLMSPWAT  10 ${clm_dt}  2  cos04.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSTHICK  CLMTHICK  10 ${clm_dt}  2  cos05.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSPRESS  CLMPRESS  10 ${clm_dt}  2  cos06.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSDIRSW  CLMDIRSW  10 ${clm_dt}  2  cos07.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSDIFSW  CLMDIFSW  10 ${clm_dt}  2  cos08.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSLONGW  CLMLONGW  10 ${clm_dt}  2  cos09.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSCVPRE  CLMCVPRE  10 ${clm_dt}  2  cos15.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSGSPRE  CLMGSPRE  10 ${clm_dt}  2  cos16.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+#
+COSCO2PP  CLMCO2PP  10 ${clm_dt}  2  cos17.nc EXPORTED
+90 101 267 302 gcos gclm SEQ=1
+R 0 R 0
+LOCTRANS SCRIPR
+ AVERAGE
+ BILINEAR LR SCALAR LATLON 1
+# FROM CLM TO COSMO
+CLMINFRA COSINFRA  10 ${clm_dt}  1  clm05.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLMALBED COSALBED  10 ${clm_dt}  1  clm06.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLMALBEI COSALBEI  10 ${clm_dt} 1  clm07.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLMCO2FL COSCO2FL  10 ${clm_dt} 1  clm08.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLM_RAM1 COS_RAM1  10 ${clm_dt} 1  clm09.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLM_RAH1 COS_RAH1  10 ${clm_dt} 1  clm10.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLM_RAW1 COS_RAW1  10 ${clm_dt} 1  clm11.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLM_TSF1 COS_TSF1  10 ${clm_dt} 1  clm12.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+CLM_QSF1 COS_QSF1  10 ${clm_dt} 1  clm13.nc EXPORTED
+267 302 90 101 gclm gcos SEQ=2
+R 0 R 0
+SCRIPR
+ DISTWGT U SCALAR LATLON 1 4
+#
+ \$END
+end_oas
+
+
+cat > lnd.stdin << end_clm_nml
+ &clm_inparm
+ caseid         = 'clmoas'
+ ctitle         = 'clmoas'
+ nsrest         =  0
+ nelapse        =  ${clm_steps}
+ dtime          =  ${clm_dt}
+ start_ymd      =  ${clm_start_ymd}
+ start_tod      =  ${clm_start_sec}
+
+ finidat        = '$INIDIR/clm_in.nc'
+ flndtopo       = '/work/um0203/u300636/for2131/runs/inputs/clm/topodata_0302x0267.nc'
+ fsurdat        = '/work/um0203/u300636/for2131/runs/inputs/clm/surfdata_ens9_0302x0267.nc'
+ fatmgrid       = '/work/um0203/u300636/for2131/runs/inputs/clm/griddata_0302x0267.nc'
+ fatmlndfrc     = '/work/um0203/u300636/for2131/runs/inputs/clm/fracdata_0302x0267.nc'
+ fatmtopo       = ''
+ fpftcon        = '/work/um0203/u300636/for2131/runs/inputs/clm/clm3.5/inputdata/lnd/clm2/pftdata/pft-physiology.c070207'
+ offline_atmdir = '/work/um0203/u300636/for2131/runs/inputs/clm/atm_forcing/'
+ frivinp_rtm    = '/work/um0203/u300636/for2131/runs/inputs/clm/clm3.5/inputdata/lnd/clm2/rtmdata/rdirc.05.061026'
+
+ hist_dov2xy    = .true.
+ hist_avgflag_pertape = 'I'
+ hist_nhtfrq    =  ${clm_out_ts}
+ hist_mfilt     =  1
+ hist_crtinic   = 'NONE'
+ hist_fincl1    = 'TSOI', 'FCTR', 'FCEV', 'FGEV', 'FSH', 'FSH_G', 'FSH_V',
+                  'H2OSOI', 'TG'
+ mss_irt        =  0
+ hist_empty_htapes = .true.
+
+ irad           =  1
+ wrtdia         = .false.
+ archive_dir    = '$OUTPUT'
+ rest_flag      = .true.
+ rpntpath       = '$INIDIR/lnd.clmoas.rpointer'
+ /
+ &prof_inparm
+ /
+end_clm_nml
+
+
+cd ${WORKDIR}
+
+
+cat > slm_multiprog_mapping.conf << end_multiprog
+
+0-41   ${WORKDIR}/lmparbin_pur
+
+42-47   ${WORKDIR}/clm
+
+end_multiprog
+
+
+cd ${SCRIPTDIR}
+
+
+if [[ $(( (ens_mem - 1) % n_runs )) == 0 ]]; then
+cat > %NAME%_${ens_dir}_job.sh << end_start_job
+#!/bin/bash
+#SBATCH --job-name="TerrSysMP"
+#SBATCH --account=${account}
+#SBATCH --nodes=1
+#SBATCH --ntasks=48
+#SBATCH --ntasks-per-node=48
+#SBATCH --output=${LOGDIR}/out_%j.out
+#SBATCH --error=${LOGDIR}/err_%j.out
+#SBATCH --time=${wall_clock_time_h}:${wall_clock_time_min}:00
+#SBATCH --partition=${partition}
+#SBATCH --mail-type=NONE
+
+START_ENS=${ens_mem}
+END_ENS=$((${ens_mem}+${n_runs}))
+
+for((CURR_MEM=\${START_ENS};CURR_MEM<\${END_ENS};CURR_MEM+=1))
+do
+
+  mem_dir=\$(printf "ens%03d" \${CURR_MEM})
+  INPUT_MEM_DIR=%RUN_DIR%/input/\${mem_dir}
+  OUTPUT_MEM_DIR=%RUN_DIR%/output/\${mem_dir}
+  cd \${INPUT_MEM_DIR}
+
+  if [ "\${CURR_MEM}" = "\${START_ENS}" ]; then
+
+    source loadenvs
+    export OMPI_MCA_pml=cm         # sets the point-to-point management layer
+    export OMPI_MCA_mtl=mxm        # sets the matching transport layer (MPI-2 one-sided comm.)
+    export MXM_RDMA_PORTS=mlx5_0:1
+    export MXM_LOG_LEVEL=ERROR
+    export MXM_HANDLE_ERRORS=bt
+    export UCX_HANDLE_ERRORS=bt
+    # enable HCOLL based collectives
+    export OMPI_MCA_coll=^fca              # disable FCA for collective MPI routines
+    export OMPI_MCA_coll_hcoll_enable=1    # enable HCOLL for collective MPI routines
+    export OMPI_MCA_coll_hcoll_priority=95
+    export OMPI_MCA_coll_hcoll_np=8        # use HCOLL for all communications with more than 8 tasks
+    export HCOLL_MAIN_IB=mlx5_0:1
+    export HCOLL_ENABLE_MCAST=1
+    export HCOLL_ENABLE_MCAST_ALL=1
+    # disable specific HCOLL functions (strongly depends on the application)
+    export HCOLL_ML_DISABLE_BARRIER=1
+    export HCOLL_ML_DISABLE_IBARRIER=1
+    export HCOLL_ML_DISABLE_BCAST=1
+    export HCOLL_ML_DISABLE_REDUCE=1
+    ulimit -s unlimited
+    ulimit -c 0
+
+  fi
+
+  date
+  echo "started" > started.txt
+  rm -rf YU*
+  srun --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf
+  mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR}
+  date
+  echo "ready" > ready.txt
+
+done
+exit 0
+
+end_start_job
+
+chmod u+x %NAME%_${ens_dir}_job.sh
+sbatch %NAME%_${ens_dir}_job.sh | grep -o '[0-9]*' >> ${SCRIPTDIR}/pid_file
+fi
