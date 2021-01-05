@@ -17,7 +17,7 @@ from typing import Any, Dict
 import datetime
 
 # External modules
-from prefect import Task
+from prefect import Task, task
 
 # Internal modules
 
@@ -71,19 +71,15 @@ class SymbolicLinking(Task):
         return initialized_target
 
 
-class GetRunDir(Task):
-    def __init__(self, model_name: str, **kwargs):
-        super().__init__(**kwargs)
-        self.model_name = model_name
-
-    def run(
-            self,
-            time: datetime.datetime,
-            cycle_config: Dict[str, Any]
-    ) -> str:
-        run_dir = os.path.join(
-            cycle_config['EXPERIMENT']['path'],
-            time.strftime('%Y%m%d_%H%M'),
-            self.model_name
-        )
-        return run_dir
+@task(name='get_run_dir')
+def get_run_dir(
+        model_name: str,
+        time: datetime.datetime,
+        cycle_config: Dict[str, Any]
+) -> str:
+    run_dir = os.path.join(
+        cycle_config['EXPERIMENT']['path'],
+        time.strftime('%Y%m%d_%H%M'),
+        model_name
+    )
+    return run_dir
