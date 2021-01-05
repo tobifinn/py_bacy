@@ -23,23 +23,19 @@ import yaml
 
 
 class ReadInConfig(Task):
-    def __init__(self, config_path: Union[None, str], **kwargs):
-        super().__init__(**kwargs)
-        self.config_path = config_path
-
-    def run(self) -> Dict[str, Any]:
-        if self.config_path is None:
+    def run(self, config_path: Union[None, str]) -> Dict[str, Any]:
+        if config_path is None:
             self.logger.info('No config path given, I will return an empty '
                              'config dictionary')
             return dict()
         try:
-            yaml_file = open(self.config_path, 'r')
+            yaml_file = open(config_path, 'r')
             config = yaml.load(yaml_file)
             yaml_file.close()
         except FileNotFoundError as e:
             self.logger.error(
                 'The config file {0:s} couldn\'t be found'.format(
-                    self.config_path
+                    config_path
                 )
             )
             raise FileNotFoundError(e)
