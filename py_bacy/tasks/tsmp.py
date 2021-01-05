@@ -21,7 +21,7 @@ from prefect import Task
 # Internal modules
 
 
-class CreateReplacementDict(Task):
+class CreateTSMPReplacement(Task):
     def run(
             self,
             start_time: datetime.datetime,
