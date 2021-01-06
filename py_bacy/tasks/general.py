@@ -16,29 +16,29 @@ from typing import Union, Dict, Any
 
 # External modules
 import prefect
-from prefect import task
+from prefect import Task
 
 import yaml
 
 # Internal modules
 
 
-@task('read_in_config')
-def read_in_config(config_path: Union[None, str]) -> Dict[str, Any]:
-    logger = prefect.context.get("logger")
-    if config_path is None:
-        logger.info('No config path given, I will return an empty config '
-                    'dictionary')
-        return dict()
-    try:
-        yaml_file = open(config_path, 'r')
-        config = yaml.load(yaml_file)
-        yaml_file.close()
-    except FileNotFoundError as e:
-        logger.error(
-            'The config file {0:s} couldn\'t be found'.format(
-                config_path
+class ReadInConfig(Task):
+    def run(self, config_path: Union[None, str]) -> Dict[str, Any]:
+        if config_path is None:
+            self.logger.info(
+                'No config path given, I will return an empty config dictionary'
             )
-        )
-        raise FileNotFoundError(e)
-    return config
+            return dict()
+        try:
+            yaml_file = open(config_path, 'r')
+            config = yaml.load(yaml_file)
+            yaml_file.close()
+        except FileNotFoundError as e:
+            self.logger.error(
+                'The config file {0:s} couldn\'t be found'.format(
+                    config_path
+                )
+            )
+            raise FileNotFoundError(e)
+        return config

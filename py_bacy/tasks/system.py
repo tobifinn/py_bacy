@@ -71,15 +71,16 @@ class SymbolicLinking(Task):
         return initialized_target
 
 
-@task(name='get_run_dir')
-def get_run_dir(
-        model_name: str,
-        time: datetime.datetime,
-        cycle_config: Dict[str, Any]
-) -> str:
-    run_dir = os.path.join(
-        cycle_config['EXPERIMENT']['path'],
-        time.strftime('%Y%m%d_%H%M'),
-        model_name
-    )
-    return run_dir
+class RundirConstructor(Task):
+    def run(
+            self,
+            model_name: str,
+            time: datetime.datetime,
+            cycle_config: Dict[str, Any]
+    ) -> str:
+        run_dir = os.path.join(
+            cycle_config['EXPERIMENT']['path'],
+            time.strftime('%Y%m%d_%H%M'),
+            model_name
+        )
+        return run_dir
