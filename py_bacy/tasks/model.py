@@ -13,14 +13,13 @@
 # System modules
 import logging
 import os.path
-from typing import Dict, Any, Tuple, Union, List
+from typing import Dict, Any, Tuple, Union, List, Iterable
 import subprocess
 
 # External modules
 from prefect import Task
 
 # Internal modules
-from .system import CreateFolders
 
 
 __all__ = [
@@ -67,13 +66,34 @@ class InitializeNamelist(Task):
         return target_folder
 
 
-class CreateDirectoryStructure(CreateFolders):
+class CreateDirectoryStructure(Task):
+    def __init__(self, directories: Iterable[str], **kwargs: Any):
+        super().__init__(**kwargs)
+        self.directories = directories
+
+    @staticmethod
+    def _create_folder(initialized_path):
+        if not os.path.isdir(initialized_path):
+            os.makedirs(initialized_path)
+        if not os.path.isdir(initialized_path):
+            raise OSError(
+                'Couldn\'t initialize the directory path {0:s}'.format(
+                    initialized_path
+                )
+            )
+        return initialized_path
+
     def run(
             self,
             run_dir: str,
-            ens_mem: Union[str, int] = 0
-    ) -> Tuple[str, str]:
-        pass
+            ens_suffix: str,
+    ) -> Dict[str, str]:
+        structure = dict()
+        for dir_name in self.directories:
+            dir_path = os.path.join(run_dir, dir_name, ens_suffix)
+            _ = self._create_folder(dir_path)
+            structure[dir_name] = dir_path
+        return structure
 
 
 class ConstructEnsemble(Task):
