@@ -13,6 +13,7 @@
 # System modules
 import logging
 from typing import Union, Dict, Any
+import os.path
 
 # External modules
 import prefect
@@ -21,6 +22,12 @@ from prefect import Task
 import yaml
 
 # Internal modules
+
+
+__all__ = [
+    'ReadInConfig',
+    'ParentGetter'
+]
 
 
 class ReadInConfig(Task):
@@ -42,3 +49,22 @@ class ReadInConfig(Task):
             )
             raise FileNotFoundError(e)
         return config
+
+
+class ParentGetter(Task):
+    def run(
+            self,
+            cycle_config: Dict[str, Any],
+            run_dir: str,
+            ens_suffix: str,
+            parent_output: Union[str, None] = None
+    ) -> str:
+        analysis_dir = os.path.join(run_dir, 'analysis')
+        if parent_output:
+            parent_path = parent_output
+        elif os.path.isdir(analysis_dir):
+            parent_path = analysis_dir
+        else:
+            parent_path = cycle_config['EXPERIMENT']['path_init']
+        parent_path = os.path.join(parent_path, ens_suffix)
+        return parent_path
