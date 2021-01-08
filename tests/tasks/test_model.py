@@ -91,6 +91,43 @@ class TestModeltasks(unittest.TestCase):
             ['abs_path/test123.nml', '12']
         )
 
+    def test_construct_ensemble_det_true_det_true(self):
+        ensemble_constructor = ConstructEnsemble()
+        cycle_config = {'ENSEMBLE': {'det': True}}
+        self.assertTrue(ensemble_constructor._deterministic_run(cycle_config))
+
+    def test_construct_ensemble_det_false_det_false(self):
+        ensemble_constructor = ConstructEnsemble()
+        cycle_config = {'ENSEMBLE': {'det': False}}
+        self.assertFalse(ensemble_constructor._deterministic_run(cycle_config))
+
+    def test_construct_ensemble_det_false_key_error(self):
+        ensemble_constructor = ConstructEnsemble()
+        cycle_config = {'ENSEMBLE': {'size': 40}}
+        self.assertFalse(ensemble_constructor._deterministic_run(cycle_config))
+        cycle_config = {'ENSEMBLE': None}
+        self.assertFalse(ensemble_constructor._deterministic_run(cycle_config))
+        cycle_config = dict()
+        self.assertFalse(ensemble_constructor._deterministic_run(cycle_config))
+
+    def test_construct_ensemble_returns_suffixes_and_range(self):
+        ensemble_constructor = ConstructEnsemble()
+        cycle_config = {'ENSEMBLE': {'size': 40}}
+        suffixes = ['ens{0:03d}'.format(e) for e in range(1, 41)]
+        ens_range = list(range(1, 41))
+        ret_suffixes, ret_range = ensemble_constructor.run(cycle_config)
+        self.assertListEqual(ret_suffixes, suffixes)
+        self.assertListEqual(ret_range, ens_range)
+
+    def test_construct_ensemble_adds_deterministic(self):
+        ensemble_constructor = ConstructEnsemble()
+        cycle_config = {'ENSEMBLE': {'size': 40, 'det': True}}
+        suffixes = ['det'] + ['ens{0:03d}'.format(e) for e in range(1, 41)]
+        ens_range = [0] + list(range(1, 41))
+        ret_suffixes, ret_range = ensemble_constructor.run(cycle_config)
+        self.assertListEqual(ret_suffixes, suffixes)
+        self.assertListEqual(ret_range, ens_range)
+
 
 if __name__ == '__main__':
     unittest.main()
