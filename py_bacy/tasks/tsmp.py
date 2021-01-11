@@ -102,6 +102,18 @@ class TSMPDataLinking(Task):
         os.symlink(source, target)
         return target
 
+    def link_binaries(
+            self,
+            created_folders: Dict[str, str],
+            tsmp_config: Dict[str, Any]
+    ):
+        with os.scandir(tsmp_config['program']) as bin_files:
+            for bin_file in bin_files:
+                source_path = bin_file.path
+                file_name = os.path.basename(source_path)
+                target_path = os.path.join(created_folders['input'], file_name)
+                self.symlink(source_path, target_path)
+
     def run(
             self,
             created_folders: Dict[str, str],
@@ -109,7 +121,7 @@ class TSMPDataLinking(Task):
             start_time: datetime.datetime,
             tsmp_config: Dict[str, Any],
             restart: bool
-    ):
+    ) -> str:
         laf_file = start_time.strftime('laf%Y%m%d%H%M%S.nc')
         if restart:
             clm_out_file = clm.get_bg_filename(
@@ -134,9 +146,5 @@ class TSMPDataLinking(Task):
         clm_target = os.path.join(created_folders['input'], 'clm_in.nc')
         self.symlink(clm_source, clm_target)
 
-        with os.scandir(tsmp_config['program']) as bin_files:
-            for bin_file in bin_files:
-                source_path = bin_file.path
-                file_name = os.path.basename(source_path)
-                target_path = os.path.join(created_folders['input'], file_name)
-                self.symlink(source_path, target_path)
+        self.link_binaries(created_folders, tsmp_config)
+        return created_folders['input']
