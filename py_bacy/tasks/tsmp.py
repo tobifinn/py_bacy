@@ -33,6 +33,7 @@ __all__ = [
 class CreateTSMPReplacement(Task):
     def run(
             self,
+            name: str,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
             run_dir: str,
@@ -61,6 +62,7 @@ class CreateTSMPReplacement(Task):
         partition = cycle_config['EXPERIMENT']['partition']
 
         replacement_dict = {
+            '%NAME%': name,
             '%PROGRAM_DIR%': tsmp_config['program'],
             '%LOG_DIR%': tsmp_config['log_dir'],
             '%EXP_ID%': cycle_config['EXPERIMENT']['id'],
