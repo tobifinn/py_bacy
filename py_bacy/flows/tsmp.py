@@ -85,9 +85,9 @@ with Flow('TerrSysMP model run') as tsmp_run:
 
     slurm_checker = CheckSlurmRuns()
     output_folders = slurm_checker(
-        run_dir, folders=created_folders
+        run_dir, folders=created_folders,
+        upstream_tasks=[execution_scripts]
     )
-    slurm_checker.set_upstream(execution_scripts)
 
     output_checker = CheckOutput([
         'clmoas.clm2.h0.*.nc',
