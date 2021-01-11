@@ -66,12 +66,11 @@ class InitializeNamelist(Task):
             input_folder: str,
             mem: int=0,
             **path_kwargs
-    ) -> str:
+    ):
         target_path = os.path.join(input_folder, self.namelist_name)
         self.write_template(namelist=namelist, target_path=target_path)
         _ = subprocess.Popen([target_path, '{0:d}'.format(mem)])
-        execution_script = os.path.join(input_folder, 'test.run')
-        return execution_script
+        return target_path
 
 
 class CreateDirectoryStructure(Task):
