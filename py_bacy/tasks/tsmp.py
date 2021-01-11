@@ -16,6 +16,7 @@ from typing import Dict, Any, Union
 import datetime
 import os
 import glob
+import tempfile
 
 # External modules
 from prefect import Task
@@ -95,14 +96,11 @@ class TSMPDataLinking(Task):
                     source
                 )
             )
-        if os.path.isfile(target):
-            self.logger.debug(
-                'The target path {0:s} already exists, '
-                'I\'ll remove the file'.format(target)
-            )
-            os.remove(target)
         self.logger.debug('Symlink: {0:s} -> {1:s}'.format(source, target))
-        os.symlink(source, target)
+        temp_name = next(tempfile._get_candidate_names())
+        tmp_file = os.path.join(os.path.dirname(target), temp_name)
+        os.symlink(source, tmp_file)
+        os.replace(tmp_file, target)
         return target
 
     def link_binaries(
