@@ -16,11 +16,14 @@ import os.path
 from typing import Dict, Any, Tuple, Union, List, Iterable
 import subprocess
 import glob
+import datetime
 
 # External modules
 from prefect import Task
+import pandas as pd
 
 # Internal modules
+from .general import FlowRunner, ReadInConfig
 
 
 __all__ = [
@@ -28,7 +31,8 @@ __all__ = [
     'InitializeNamelist',
     'CreateDirectoryStructure',
     'ConstructEnsemble',
-    'CheckOutput'
+    'CheckOutput',
+    'RestartModelFlowRunner'
 ]
 
 
@@ -139,3 +143,66 @@ class CheckOutput(Task):
                 raise OSError('No available files under regex {0:s} '
                               'found!'.format(curr_path))
         return output_folder
+
+
+class RestartModelFlowRunner(FlowRunner):
+    def __init__(self, model_flow, **kwargs):
+        super().__init__(flow=model_flow, **kwargs)
+
+    def _get_timerange(
+            self,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+            restart_td: List[str]
+    ) -> List[datetime.datetime]:
+        model_steps = [pd.to_datetime(start_time), ]
+        self.logger.debug('Got {0} as restart_td'.format(restart_td))
+        for td in restart_td[:-1]:
+            try:
+                curr_td = pd.to_timedelta(td)
+                new_step = model_steps[-1] + curr_td
+            except ValueError:
+                raise ValueError('Couldn\'t convert {0:s} into '
+                                 'timedelta'.format(td))
+            model_steps.append(new_step)
+        last_steps = pd.date_range(model_steps[-1], end_time,
+                                   freq=restart_td[-1])
+        model_steps = model_steps + list(last_steps[1:])
+        model_steps = [step.to_pydatetime() for step in model_steps]
+        return model_steps
+
+    def run(self,
+            name: str,
+            start_time: datetime.datetime,
+            end_time: datetime.datetime,
+            run_dir: str,
+            config_path: str,
+            cycle_config: Dict[str, Any],
+            parent_model_output: Union[str, None] = None,
+            *args,
+            **kwargs
+    ) -> str:
+        model_config = ReadInConfig().run(config_path)
+        model_steps = self._get_timerange(
+            start_time, end_time, model_config['restart_td']
+        )
+        curr_parent_output = parent_model_output
+        curr_restart = False
+        for i, curr_model_start_time in enumerate(model_steps[:-1]):
+            try:
+                curr_end_time = model_steps[i+1]
+            except KeyError:
+                curr_end_time = end_time
+            _ = super().run(
+                start_time=start_time,
+                end_time=curr_end_time,
+                parent_output=curr_parent_output,
+                restart=curr_restart,
+                config_path=config_path,
+                cycle_config=cycle_config,
+                name=name,
+                *args, **kwargs
+            )
+            curr_restart = True
+            curr_parent_output = os.path.join(run_dir, 'output')
+        return os.path.join(run_dir, 'output')
