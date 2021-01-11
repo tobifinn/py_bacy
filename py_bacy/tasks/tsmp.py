@@ -105,7 +105,7 @@ class TSMPDataLinking(Task):
     def run(
             self,
             created_folders: Dict[str, str],
-            parent_model_analysis: Union[None, str],
+            parent_model_output: Union[None, str],
             start_time: datetime.datetime,
             tsmp_config: Dict[str, Any],
             restart: bool
@@ -118,7 +118,7 @@ class TSMPDataLinking(Task):
             cos_out_files = cosmo.get_bg_filename(
                 tsmp_config['COSMO']['bg_files'], start_time
             )
-            cos_search_path = os.path.join(parent_model_analysis,
+            cos_search_path = os.path.join(parent_model_output,
                                            cos_out_files)
             self.logger.info('COSMO search path: {0:s}'.format(cos_search_path))
             cos_source = list(sorted(glob.glob(cos_search_path)))[0]
@@ -126,11 +126,11 @@ class TSMPDataLinking(Task):
             clm_out_file = start_time.strftime(
                 'clm_ana%Y%m%d%H%M%S.nc'
             )
-            cos_source = os.path.join(parent_model_analysis, laf_file)
+            cos_source = os.path.join(parent_model_output, laf_file)
         cos_target = os.path.join(created_folders['input'], laf_file)
         self.symlink(cos_source, cos_target)
 
-        clm_source = os.path.join(parent_model_analysis, clm_out_file)
+        clm_source = os.path.join(parent_model_output, clm_out_file)
         clm_target = os.path.join(created_folders['input'], 'clm_in.nc')
         self.symlink(clm_source, clm_target)
 

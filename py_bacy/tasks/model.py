@@ -63,14 +63,14 @@ class InitializeNamelist(Task):
     def run(
             self,
             namelist: str,
-            created_folders: Dict[str, str],
+            folders: Dict[str, str],
             mem: int=0,
             **path_kwargs
     ) -> str:
-        target_path = os.path.join(created_folders['input'], self.namelist_name)
+        target_path = os.path.join(folders['input'], self.namelist_name)
         self.write_template(namelist=namelist, target_path=target_path)
         _ = subprocess.Popen([target_path, '{0:d}'.format(mem)])
-        execution_script = os.path.join(created_folders['input'], 'test.run')
+        execution_script = os.path.join(folders['input'], 'test.run')
         return execution_script
 
 

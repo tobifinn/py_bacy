@@ -70,6 +70,7 @@ with Flow('TerrSysMP model run') as tsmp_run:
     _ = data_linker.map(
         created_folders=created_folders,
         parent_model_output=parent_model_output,
+        start_time=unmapped(start_time),
         tsmp_config=unmapped(tsmp_config),
         restart=unmapped(restart)
     )
@@ -77,7 +78,7 @@ with Flow('TerrSysMP model run') as tsmp_run:
     namelist_initializer = InitializeNamelist('tsmp_run.nml')
     execution_scripts = namelist_initializer.map(
         namelist=unmapped(namelist),
-        folder=created_folders,
+        folders=created_folders,
         mem=ens_range
     )
 
