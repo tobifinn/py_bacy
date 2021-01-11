@@ -131,14 +131,11 @@ class CheckOutput(Task):
         super().__init__(**kwargs)
         self.output_regex = output_regex
 
-    def run(self, output_folder: str) -> List[str]:
-        available_output = []
+    def run(self, output_folder: str) -> str:
         for regex in self.output_regex:
             curr_path = os.path.join(output_folder, regex)
             avail_files = list(glob.glob(curr_path))
             if not avail_files:
                 raise OSError('No available files under regex {0:s} '
                               'found!'.format(curr_path))
-            available_output.extend(avail_files)
-        available_output = list(sorted(available_output))
-        return available_output
+        return output_folder

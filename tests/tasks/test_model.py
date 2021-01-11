@@ -75,7 +75,7 @@ class TestModeltasks(unittest.TestCase):
             namelist_initializer.write_template('test 123', 'test.nml')
         mocked_call.assert_called_once_with(['chmod', '755', 'test.nml'])
 
-    @patch('subprocess.Popen', return_value=None)
+    @patch('subprocess.check_call', return_value=None)
     @patch('py_bacy.tasks.model.InitializeNamelist.write_template')
     def test_run_calls_popen_to_initialize_namelists(self, _, mocked_popen):
         namelist_initializer = InitializeNamelist('test.nml')
@@ -123,27 +123,19 @@ class TestModeltasks(unittest.TestCase):
 
     def test_check_output_checks_necessary_files(self):
         output_checker = CheckOutput(['bla*.nc'])
-        created_folders = {'output': 'test_folder'}
+        created_folders = 'test_folder'
         with patch('glob.glob', return_value=('test.nc', 'test1.nc')) as \
                 glob_patch:
-            outputted_files = output_checker.run(created_folders)
-        self.assertListEqual(['test.nc', 'test1.nc'], outputted_files)
+            output_folder = output_checker.run(created_folders)
+        self.assertEqual('test_folder', output_folder)
         glob_patch.assert_called_once_with('test_folder/bla*.nc')
 
     @patch('glob.glob', return_value=[])
     def test_check_output_raises_os_error_if_empty(self, _):
         output_checker = CheckOutput(['bla*.nc'])
-        created_folders = {'output': 'test_folder'}
+        created_folders = 'test_folder'
         with self.assertRaises(OSError):
             outputted_files = output_checker.run(created_folders)
-
-    def test_check_output_sorts_files(self):
-        output_checker = CheckOutput(['bla*.nc', 'blu*.nc'])
-        created_folders = {'output': 'test_folder'}
-        with patch('glob.glob', side_effect=(['test.nc'], ['atest.nc'])) as \
-                glob_patch:
-            outputted_files = output_checker.run(created_folders)
-        self.assertListEqual(['atest.nc', 'test.nc'], outputted_files)
 
 
 if __name__ == '__main__':
