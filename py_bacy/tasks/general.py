@@ -61,7 +61,6 @@ class ParentGetter(Task):
     ) -> str:
         outer_dir = os.path.dirname(run_dir)
         analysis_dir = os.path.join(outer_dir, 'analysis')
-        self.logger.info()
         if parent_output:
             parent_path = parent_output
         elif os.path.isdir(analysis_dir):
