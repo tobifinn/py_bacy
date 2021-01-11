@@ -13,6 +13,7 @@
 # System modules
 import logging
 import subprocess
+from typing import Dict
 
 # External modules
 from prefect import Task
@@ -33,10 +34,11 @@ class RunSlurmScript(Task):
             running = True
         return running
 
-    def run(self, path_script: str):
+    def run(self, path_script: str, folders: Dict[str, str]) -> str:
         slurm_return = subprocess.Popen([path_script], stdout=subprocess.PIPE)
         out, _ = slurm_return.communicate()
         pid = int(out.decode(encoding='UTF-8'))
         running = True
         while running:
             running = self.check_heartbeat(pid)
+        return folders['output']
