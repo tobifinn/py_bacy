@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_tsmp_flow():
-    with Flow('TerrSysMP model run') as tsmp_run:
+    with Flow('tsmp_run') as tsmp_run:
         start_time = Parameter('start_time')
         end_time = Parameter('end_time')
         config_path = Parameter('config_path')
