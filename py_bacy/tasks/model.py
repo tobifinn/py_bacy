@@ -131,10 +131,10 @@ class CheckOutput(Task):
         super().__init__(**kwargs)
         self.output_regex = output_regex
 
-    def run(self, created_folders: Dict[str, str]) -> List[str]:
+    def run(self, output_folder: str) -> List[str]:
         available_output = []
         for regex in self.output_regex:
-            curr_path = os.path.join(created_folders['output'], regex)
+            curr_path = os.path.join(output_folder, regex)
             avail_files = list(glob.glob(curr_path))
             if not avail_files:
                 raise OSError('No available files under regex {0:s} '
