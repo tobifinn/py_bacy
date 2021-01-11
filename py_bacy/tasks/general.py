@@ -39,7 +39,7 @@ class ReadInConfig(Task):
             return dict()
         try:
             yaml_file = open(config_path, 'r')
-            config = yaml.load(yaml_file)
+            config = yaml.load(yaml_file, Loader=yaml.FullLoader)
             yaml_file.close()
         except FileNotFoundError as e:
             self.logger.error(
