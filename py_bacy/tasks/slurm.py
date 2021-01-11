@@ -50,11 +50,11 @@ class CheckSlurmRuns(Task):
         return running
 
     def run(self, run_dir: str, folders: List[Dict[str, str]]) -> List[str]:
+        pid_path = os.path.join(run_dir, 'input', 'pid_file')
+        pids = self.get_pids(pid_path)
         running = True
         while running:
             time.sleep(self.sleep_time)
-            pid_path = os.path.join(run_dir, 'input', 'pid_file')
-            pids = self.get_pids(pid_path)
             running = self.check_heartbeat(pids)
         output_folders = [folder_dict['output'] for folder_dict in folders]
         return output_folders
