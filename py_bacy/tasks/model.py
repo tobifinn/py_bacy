@@ -39,10 +39,10 @@ class ModifyNamelist(Task):
 
     def run(
             self,
-            template_path: str,
+            model_config: Dict[str, Any],
             placeholder_dict: Dict[str, Any]
     ) -> str:
-        template = self.get_template(template_path)
+        template = self.get_template(model_config['template'])
         for placeholder, value in placeholder_dict.items():
             template = template.replace(placeholder, value)
         return template
