@@ -15,6 +15,7 @@ import logging
 import os.path
 from typing import Dict, Any, Tuple, Union, List, Iterable
 import subprocess
+import glob
 
 # External modules
 from prefect import Task
@@ -26,7 +27,8 @@ __all__ = [
     'ModifyNamelist',
     'InitializeNamelist',
     'CreateDirectoryStructure',
-    'ConstructEnsemble'
+    'ConstructEnsemble',
+    'CheckOutput'
 ]
 
 
@@ -49,21 +51,27 @@ class ModifyNamelist(Task):
 
 
 class InitializeNamelist(Task):
-    def __init__(self, path_template: str, **kwargs):
+    def __init__(self, namelist_name: str, **kwargs):
         super().__init__(**kwargs)
-        self.path_template = path_template
+        self.namelist_name = namelist_name
 
     def write_template(self, namelist: str, target_path: str) -> None:
         with open(target_path, mode='w') as target_file:
             target_file.write(namelist)
         subprocess.call(['chmod', '755', target_path])
 
-    def run(self, namelist: str, ens_mem: int = 0, **path_kwargs) -> str:
-        target_path = self.path_template.format(**path_kwargs)
+    def run(
+            self,
+            namelist: str,
+            created_folders: Dict[str, str],
+            mem: int=0,
+            **path_kwargs
+    ) -> str:
+        target_path = os.path.join(created_folders['input'], self.namelist_name)
         self.write_template(namelist=namelist, target_path=target_path)
-        _ = subprocess.Popen([target_path, '{0:d}'.format(ens_mem)])
-        target_folder = os.path.basename(target_path)
-        return target_folder
+        _ = subprocess.Popen([target_path, '{0:d}'.format(mem)])
+        execution_script = os.path.join(created_folders['input'], 'test.run')
+        return execution_script
 
 
 class CreateDirectoryStructure(Task):
@@ -117,3 +125,21 @@ class ConstructEnsemble(Task):
             for mem in range(1, cycle_config['ENSEMBLE']['size']+1)
         ]
         return suffixes, ens_range
+
+
+class CheckOutput(Task):
+    def __init__(self, output_regex: Iterable[str], **kwargs):
+        super().__init__(**kwargs)
+        self.output_regex = output_regex
+
+    def run(self, created_folders: Dict[str, str]) -> List[str]:
+        available_output = []
+        for regex in self.output_regex:
+            curr_path = os.path.join(created_folders['output'], regex)
+            avail_files = list(glob.glob(curr_path))
+            if not avail_files:
+                raise OSError('No available files under regex {0:s} '
+                              'found!'.format(curr_path))
+            available_output.extend(avail_files)
+        available_output = list(sorted(available_output))
+        return available_output

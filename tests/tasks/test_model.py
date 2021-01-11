@@ -40,7 +40,8 @@ class TestModeltasks(unittest.TestCase):
         with patch('py_bacy.tasks.model.ModifyNamelist.get_template',
                    return_value='get_template called') as template_mock:
             namelist_modifier = ModifyNamelist()
-            returned_template = namelist_modifier.run('test.nml', dict())
+            curr_config = {'template': 'test.nml'}
+            returned_template = namelist_modifier.run(curr_config, dict())
         template_mock.assert_called_once_with('test.nml')
         self.assertEqual(returned_template, 'get_template called')
 
@@ -50,8 +51,9 @@ class TestModeltasks(unittest.TestCase):
         with patch(
                 'builtins.open', mock_open(read_data='%PLACEHOLDER% 123')
         ) as mocked_open:
+            curr_config = {'template': 'test.nml'}
             replaced_template = namelist_modifier.run(
-                'test.nml', placeholder_dict
+                curr_config, placeholder_dict
             )
         mocked_open.assert_called_once_with('test.nml', mode='r')
         self.assertEqual(replaced_template, 'test 123')
@@ -75,20 +77,12 @@ class TestModeltasks(unittest.TestCase):
 
     @patch('subprocess.Popen', return_value=None)
     @patch('py_bacy.tasks.model.InitializeNamelist.write_template')
-    def test_run_inserts_path_kwargs_into_target_path(self, mocked_write, _):
-        namelist_initializer = InitializeNamelist('abs_path/test{test:s}.nml')
-        _ = namelist_initializer.run('test.nml', 0, test='123')
-        mocked_write.assert_called_with(
-            namelist='test.nml', target_path='abs_path/test123.nml'
-        )
-
-    @patch('subprocess.Popen', return_value=None)
-    @patch('py_bacy.tasks.model.InitializeNamelist.write_template')
     def test_run_calls_popen_to_initialize_namelists(self, _, mocked_popen):
-        namelist_initializer = InitializeNamelist('abs_path/test{test:s}.nml')
-        _ = namelist_initializer.run('test.nml', 12, test='123')
+        namelist_initializer = InitializeNamelist('test.nml')
+        created_folders = {'input': 'abs_path'}
+        _ = namelist_initializer.run('test.nml', created_folders, 12)
         mocked_popen.assert_called_with(
-            ['abs_path/test123.nml', '12']
+            ['abs_path/test.nml', '12']
         )
 
     def test_construct_ensemble_det_true_det_true(self):
@@ -127,6 +121,30 @@ class TestModeltasks(unittest.TestCase):
         ret_suffixes, ret_range = ensemble_constructor.run(cycle_config)
         self.assertListEqual(ret_suffixes, suffixes)
         self.assertListEqual(ret_range, ens_range)
+
+    def test_check_output_checks_necessary_files(self):
+        output_checker = CheckOutput(['bla*.nc'])
+        created_folders = {'output': 'test_folder'}
+        with patch('glob.glob', return_value=('test.nc', 'test1.nc')) as \
+                glob_patch:
+            outputted_files = output_checker.run(created_folders)
+        self.assertListEqual(['test.nc', 'test1.nc'], outputted_files)
+        glob_patch.assert_called_once_with('test_folder/bla*.nc')
+
+    @patch('glob.glob', return_value=[])
+    def test_check_output_raises_os_error_if_empty(self, _):
+        output_checker = CheckOutput(['bla*.nc'])
+        created_folders = {'output': 'test_folder'}
+        with self.assertRaises(OSError):
+            outputted_files = output_checker.run(created_folders)
+
+    def test_check_output_sorts_files(self):
+        output_checker = CheckOutput(['bla*.nc', 'blu*.nc'])
+        created_folders = {'output': 'test_folder'}
+        with patch('glob.glob', side_effect=(['test.nc'], ['atest.nc'])) as \
+                glob_patch:
+            outputted_files = output_checker.run(created_folders)
+        self.assertListEqual(['atest.nc', 'test.nc'], outputted_files)
 
 
 if __name__ == '__main__':
