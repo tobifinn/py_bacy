@@ -17,7 +17,7 @@ import os.path
 
 # External modules
 import prefect
-from prefect import Task
+from prefect import Task, Flow
 
 import yaml
 
@@ -69,3 +69,12 @@ class ParentGetter(Task):
             parent_path = cycle_config['EXPERIMENT']['path_init']
         parent_path = os.path.join(parent_path, ens_suffix)
         return parent_path
+
+
+class FlowRunner(Task):
+    def __init__(self, flow: Flow, **kwargs):
+        super().__init__(**kwargs)
+        self.flow = flow
+
+    def run(self, *args, **kwargs) -> str:
+        return self.flow.run(*args, **kwargs)
