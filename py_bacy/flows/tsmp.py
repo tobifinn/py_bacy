@@ -45,7 +45,7 @@ with Flow('TerrSysMP model run') as tsmp_run:
 
     create_replacement = CreateTSMPReplacement()
     placeholder_dict = create_replacement(
-        start_time, end_time, run_dir, tsmp_config, cycle_config
+        name, start_time, end_time, run_dir, tsmp_config, cycle_config
     )
 
     namelist_modifier = ModifyNamelist()
@@ -83,14 +83,16 @@ with Flow('TerrSysMP model run') as tsmp_run:
         mem=ens_range
     )
 
-    slurm_executor = RunSlurmScript()
-    output_folder = slurm_executor.map(
-        execution_scripts, folders=created_folders
+    slurm_checker = CheckSlurmRuns()
+    output_folders = slurm_checker(
+        run_dir, folders=created_folders
     )
+    slurm_checker.set_upstream(execution_scripts)
+
     output_checker = CheckOutput([
         'clmoas.clm2.h0.*.nc',
         'clmoas.clm2.r.*.nc',
         'lffd*.nc_ana',
         'lfff*.nc_fg'
     ])
-    flow_output = output_checker.map(output_folder)
+    flow_output = output_checker.map(output_folders)
