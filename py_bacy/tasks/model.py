@@ -60,7 +60,7 @@ class InitializeNamelist(Task):
         self.namelist_name = namelist_name
 
     def write_template(self, namelist: str, target_path: str) -> None:
-        with open(target_path, mode='w') as target_file:
+        with open(target_path, mode='w+') as target_file:
             target_file.write(namelist)
         subprocess.call(['chmod', '755', target_path])
 

@@ -101,6 +101,7 @@ class TSMPDataLinking(Task):
                 'I\'ll remove the file'.format(target)
             )
             os.remove(target)
+        self.logger.debug('Symlink: {0:s} -> {1:s}'.format(source, target))
         os.symlink(source, target)
         return target
 
