@@ -46,7 +46,7 @@ class ModifyNamelist(Task):
     ) -> str:
         template = self.get_template(model_config['template'])
         for placeholder, value in placeholder_dict.items():
-            template = template.replace(placeholder, value)
+            template = template.replace(placeholder, str(value))
         return template
 
 
