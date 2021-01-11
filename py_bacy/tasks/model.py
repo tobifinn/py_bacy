@@ -179,7 +179,6 @@ class RestartModelFlowRunner(FlowRunner):
             config_path: str,
             cycle_config: Dict[str, Any],
             parent_model_output: Union[str, None] = None,
-            *args,
             **kwargs
     ) -> str:
         model_config = ReadInConfig().run(config_path)
@@ -201,7 +200,7 @@ class RestartModelFlowRunner(FlowRunner):
                 config_path=config_path,
                 cycle_config=cycle_config,
                 name=name,
-                *args, **kwargs
+                **kwargs
             )
             curr_restart = True
             curr_parent_output = os.path.join(run_dir, 'output')

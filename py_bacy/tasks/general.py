@@ -76,5 +76,5 @@ class FlowRunner(Task):
         super().__init__(**kwargs)
         self.flow = flow
 
-    def run(self, *args, **kwargs) -> str:
-        return self.flow.run(*args, **kwargs)
+    def run(self, **kwargs) -> str:
+        return self.flow.run(**kwargs)
