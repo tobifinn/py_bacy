@@ -116,12 +116,16 @@ def get_tsmp_restart_flow():
         name = Parameter('name')
         parent_output = Parameter('parent_output', default=None)
 
+        rundir_constructor = RundirConstructor()
+        run_dir = rundir_constructor(name, start_time, cycle_config)
+
         tsmp_output = tsmp_restart_runner(
+            name=name,
             start_time=start_time,
             end_time=end_time,
+            run_dir=run_dir,
             config_path=config_path,
             cycle_config=cycle_config,
-            name=name,
-            parent_output=parent_output
+            parent_output=parent_output,
         )
     return restart_run, tsmp_output
