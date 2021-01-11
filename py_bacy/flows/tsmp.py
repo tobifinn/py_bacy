@@ -68,7 +68,7 @@ with Flow('TerrSysMP model run') as tsmp_run:
     )
 
     data_linker = TSMPDataLinking()
-    _ = data_linker.map(
+    input_folders = data_linker.map(
         created_folders=created_folders,
         parent_model_output=parent_model_output,
         start_time=unmapped(start_time),
@@ -79,12 +79,12 @@ with Flow('TerrSysMP model run') as tsmp_run:
     namelist_initializer = InitializeNamelist('tsmp_run.nml')
     execution_scripts = namelist_initializer.map(
         namelist=unmapped(namelist),
-        folders=created_folders,
+        input_folders=input_folders,
         mem=ens_range
     )
 
     slurm_executor = RunSlurmScript()
-    slurm_executor.map(execution_scripts)
+    output_folder = slurm_executor.map(execution_scripts)
     #
     output_checker = CheckOutput([
         'clmoas.clm2.h0.*.nc',
@@ -92,4 +92,4 @@ with Flow('TerrSysMP model run') as tsmp_run:
         'lffd*.nc_ana',
         'lfff*.nc_fg'
     ])
-    flow_output = output_checker.map(created_folders)
+    flow_output = output_checker.map(output_folder)
