@@ -178,14 +178,14 @@ class RestartModelFlowRunner(FlowRunner):
             run_dir: str,
             config_path: str,
             cycle_config: Dict[str, Any],
-            parent_model_output: Union[str, None] = None,
+            parent_output: Union[str, None] = None,
             **kwargs
     ) -> str:
         model_config = ReadInConfig().run(config_path)
         model_steps = self._get_timerange(
             start_time, end_time, model_config['restart_td']
         )
-        curr_parent_output = parent_model_output
+        curr_parent_output = parent_output
         curr_restart = False
         for i, curr_model_start_time in enumerate(model_steps[:-1]):
             try:
