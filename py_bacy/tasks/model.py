@@ -69,7 +69,7 @@ class InitializeNamelist(Task):
     ):
         target_path = os.path.join(input_folder, self.namelist_name)
         self.write_template(namelist=namelist, target_path=target_path)
-        _ = subprocess.Popen([target_path, '{0:d}'.format(mem)])
+        _ = subprocess.check_call([target_path, '{0:d}'.format(mem)])
         return target_path
 
 
