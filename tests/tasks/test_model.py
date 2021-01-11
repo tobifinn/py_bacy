@@ -79,8 +79,7 @@ class TestModeltasks(unittest.TestCase):
     @patch('py_bacy.tasks.model.InitializeNamelist.write_template')
     def test_run_calls_popen_to_initialize_namelists(self, _, mocked_popen):
         namelist_initializer = InitializeNamelist('test.nml')
-        created_folders = {'input': 'abs_path'}
-        _ = namelist_initializer.run('test.nml', created_folders, 12)
+        _ = namelist_initializer.run('test.nml', 'abs_path', 12)
         mocked_popen.assert_called_with(
             ['abs_path/test.nml', '12']
         )
