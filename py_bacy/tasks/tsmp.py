@@ -12,13 +12,22 @@
 
 # System modules
 import logging
-from typing import Dict, Any
+from typing import Dict, Any, Union
 import datetime
+import os
+import glob
 
 # External modules
 from prefect import Task
 
 # Internal modules
+from py_bacy.intf_pytassim import cosmo, clm
+
+
+__all__ = [
+    'CreateTSMPReplacement',
+    'TSMPDataLinking'
+]
 
 
 class CreateTSMPReplacement(Task):
@@ -74,3 +83,60 @@ class CreateTSMPReplacement(Task):
             '%CLM_STEPS%': int(clm_steps),
         }
         return replacement_dict
+
+
+class TSMPDataLinking(Task):
+    def symlink(self, source: str, target: str) -> str:
+        if not os.path.exists(source):
+            raise ValueError(
+                'Give source path {0:s} doesn\'t exists!'.format(
+                    source
+                )
+            )
+        if os.path.isfile(target):
+            self.logger.debug(
+                'The target path {0:s} already exists, '
+                'I\'ll remove the file'.format(target)
+            )
+            os.remove(target)
+        os.symlink(source, target)
+        return target
+
+    def run(
+            self,
+            created_folders: Dict[str, str],
+            parent_model_analysis: Union[None, str],
+            start_time: datetime.datetime,
+            tsmp_config: Dict[str, Any],
+            restart: bool
+    ):
+        laf_file = start_time.strftime('laf%Y%m%d%H%M%S.nc')
+        if restart:
+            clm_out_file = clm.get_bg_filename(
+                tsmp_config['CLM']['bg_files'], start_time
+            )
+            cos_out_files = cosmo.get_bg_filename(
+                tsmp_config['COSMO']['bg_files'], start_time
+            )
+            cos_search_path = os.path.join(parent_model_analysis,
+                                           cos_out_files)
+            self.logger.info('COSMO search path: {0:s}'.format(cos_search_path))
+            cos_source = list(sorted(glob.glob(cos_search_path)))[0]
+        else:
+            clm_out_file = start_time.strftime(
+                'clm_ana%Y%m%d%H%M%S.nc'
+            )
+            cos_source = os.path.join(parent_model_analysis, laf_file)
+        cos_target = os.path.join(created_folders['input'], laf_file)
+        self.symlink(cos_source, cos_target)
+
+        clm_source = os.path.join(parent_model_analysis, clm_out_file)
+        clm_target = os.path.join(created_folders['input'], 'clm_in.nc')
+        self.symlink(clm_source, clm_target)
+
+        with os.scandir(tsmp_config['program']) as bin_files:
+            for bin_file in bin_files:
+                source_path = bin_file.path
+                file_name = os.path.basename(source_path)
+                target_path = os.path.join(created_folders['input'], file_name)
+                self.symlink(source_path, target_path)
