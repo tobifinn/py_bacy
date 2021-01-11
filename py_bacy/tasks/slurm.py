@@ -43,7 +43,9 @@ class CheckSlurmRuns(Task):
         squeue_output = subprocess.check_output(
             ['squeue', '--jobs={0:s}'.format(pids_str)], text=True
         )
-        if any(pid in squeue_output for pid in pids):
+        pids_running = {pid: pid in squeue_output for pid in pids}
+        self.logger.info(pids_running)
+        if any(pids_running.values()):
             running = True
         return running
 
