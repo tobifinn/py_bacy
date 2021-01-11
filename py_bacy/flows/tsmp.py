@@ -28,6 +28,28 @@ from py_bacy.tasks.tsmp import *
 logger = logging.getLogger(__name__)
 
 
+def get_tsmp_restart_flow():
+    tsmp_flow, _ = get_tsmp_flow()
+    tsmp_restart_runner = RestartModelFlowRunner(tsmp_flow)
+    with Flow('tsmp_restart_run') as restart_run:
+        start_time = Parameter('start_time')
+        end_time = Parameter('end_time')
+        config_path = Parameter('config_path')
+        cycle_config = Parameter('cycle_config')
+        name = Parameter('name')
+        parent_output = Parameter('parent_output', default=None)
+
+        tsmp_output = tsmp_restart_runner(
+            start_time=start_time,
+            end_time=end_time,
+            config_path=config_path,
+            cycle_config=cycle_config,
+            name=name,
+            parent_output=parent_output
+        )
+    return restart_run, tsmp_output
+
+
 def get_tsmp_flow():
     with Flow('tsmp_run') as tsmp_run:
         start_time = Parameter('start_time')
