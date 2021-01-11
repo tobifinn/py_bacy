@@ -59,7 +59,9 @@ class ParentGetter(Task):
             ens_suffix: str,
             parent_output: Union[str, None] = None
     ) -> str:
-        analysis_dir = os.path.join(os.path.basename(run_dir), 'analysis')
+        outer_dir = os.path.dirname(run_dir)
+        analysis_dir = os.path.join(outer_dir, 'analysis')
+        self.logger.info()
         if parent_output:
             parent_path = parent_output
         elif os.path.isdir(analysis_dir):
