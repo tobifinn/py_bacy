@@ -59,7 +59,7 @@ class ParentGetter(Task):
             ens_suffix: str,
             parent_output: Union[str, None] = None
     ) -> str:
-        analysis_dir = os.path.join(run_dir, 'analysis')
+        analysis_dir = os.path.join(os.path.basename(run_dir), 'analysis')
         if parent_output:
             parent_path = parent_output
         elif os.path.isdir(analysis_dir):
