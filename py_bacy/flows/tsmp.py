@@ -34,13 +34,14 @@ with Flow('TerrSysMP model run') as tsmp_run:
     config_path = Parameter('config_path')
     cycle_config = Parameter('cycle_config')
     restart = Parameter('restart')
+    name = Parameter('name')
     parent_output = Parameter('parent_output', default=None)
 
     config_reader = ReadInConfig()
     tsmp_config = config_reader(config_path)
 
     rundir_constructor = RundirConstructor()
-    run_dir = rundir_constructor('tsmp', start_time, cycle_config)
+    run_dir = rundir_constructor(name, start_time, cycle_config)
 
     create_replacement = CreateTSMPReplacement()
     placeholder_dict = create_replacement(
