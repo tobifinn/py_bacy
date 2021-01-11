@@ -79,13 +79,14 @@ with Flow('TerrSysMP model run') as tsmp_run:
     namelist_initializer = InitializeNamelist('tsmp_run.nml')
     execution_scripts = namelist_initializer.map(
         namelist=unmapped(namelist),
-        input_folders=input_folders,
+        input_folder=input_folders,
         mem=ens_range
     )
 
     slurm_executor = RunSlurmScript()
-    output_folder = slurm_executor.map(execution_scripts)
-    #
+    output_folder = slurm_executor.map(
+        execution_scripts, folders=created_folders
+    )
     output_checker = CheckOutput([
         'clmoas.clm2.h0.*.nc',
         'clmoas.clm2.r.*.nc',
