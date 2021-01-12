@@ -118,24 +118,24 @@ class TSMPDataLinking(Task):
             self,
             created_folders: Dict[str, str],
             parent_model_output: Union[None, str],
-            start_time: datetime.datetime,
+            model_start_time: datetime.datetime,
             tsmp_config: Dict[str, Any],
             restart: bool
     ) -> str:
-        laf_file = start_time.strftime('laf%Y%m%d%H%M%S.nc')
+        laf_file = model_start_time.strftime('laf%Y%m%d%H%M%S.nc')
         if restart:
             clm_out_file = clm.get_bg_filename(
-                tsmp_config['CLM']['bg_files'], start_time
+                tsmp_config['CLM']['bg_files'], model_start_time
             )
             cos_out_files = cosmo.get_bg_filename(
-                tsmp_config['COSMO']['bg_files'], start_time
+                tsmp_config['COSMO']['bg_files'], model_start_time
             )
             cos_search_path = os.path.join(parent_model_output,
                                            cos_out_files)
             self.logger.info('COSMO search path: {0:s}'.format(cos_search_path))
             cos_source = list(sorted(glob.glob(cos_search_path)))[0]
         else:
-            clm_out_file = start_time.strftime(
+            clm_out_file = model_start_time.strftime(
                 'clm_ana%Y%m%d%H%M%S.nc'
             )
             cos_source = os.path.join(parent_model_output, laf_file)
