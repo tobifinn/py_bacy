@@ -35,13 +35,12 @@ class CreateTSMPReplacement(Task):
     def run(
             self,
             name: str,
-            start_time: datetime.datetime,
+            model_start_time: datetime.datetime,
             end_time: datetime.datetime,
             run_dir: str,
             tsmp_config: Dict[str, Any],
             cycle_config: Dict[str, Any]
     ) -> Dict[str, Any]:
-        model_start_time = start_time
         ini_time = datetime.datetime.strptime(
             cycle_config['TIME']['start_time'],
             cycle_config['TIME']['time_format'],
