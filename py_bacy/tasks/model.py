@@ -196,13 +196,13 @@ class RestartModelFlowRunner(FlowRunner):
             except KeyError:
                 curr_end_time = end_time
             _ = super().run(
-                model_start_time=curr_model_start_time,
                 start_time=start_time,
                 end_time=curr_end_time,
                 parent_output=curr_parent_output,
                 restart=curr_restart,
                 config_path=config_path,
                 cycle_config=cycle_config,
+                model_start_time=curr_model_start_time,
                 name=name,
                 **kwargs
             )
