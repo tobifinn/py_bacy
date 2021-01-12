@@ -42,6 +42,10 @@ def get_tsmp_flow():
         restart = Parameter('restart')
         name = Parameter('name')
         parent_output = Parameter('parent_output', default=None)
+        model_start_time = Parameter('model_start_time', default=None)
+
+        with case(model_start_time, None):
+            model_start_time = start_time
 
         config_reader = ReadInConfig()
         tsmp_config = config_reader(config_path)
@@ -51,7 +55,7 @@ def get_tsmp_flow():
 
         create_replacement = CreateTSMPReplacement()
         placeholder_dict = create_replacement(
-            name, start_time, end_time, run_dir, tsmp_config, cycle_config
+            name, model_start_time, end_time, run_dir, tsmp_config, cycle_config
         )
 
         namelist_modifier = ModifyNamelist()
@@ -77,7 +81,7 @@ def get_tsmp_flow():
         input_folders = data_linker.map(
             created_folders=created_folders,
             parent_model_output=parent_model_output,
-            start_time=unmapped(start_time),
+            model_start_time=unmapped(model_start_time),
             tsmp_config=unmapped(tsmp_config),
             restart=unmapped(restart)
         )
