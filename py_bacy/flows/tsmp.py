@@ -14,8 +14,7 @@
 import logging
 
 # External modules
-from prefect import Flow, Parameter, unmapped
-from prefect.tasks.control_flow.case import case
+from prefect import Flow, Parameter, unmapped, context
 
 # Internal modules
 from py_bacy.tasks.general import *
@@ -35,6 +34,8 @@ __all__ = [
 
 def get_tsmp_flow():
     with Flow('tsmp_run') as tsmp_run:
+        logger = context.get("logger")
+
         start_time = Parameter('start_time')
         end_time = Parameter('end_time')
         config_path = Parameter('config_path')
@@ -44,8 +45,10 @@ def get_tsmp_flow():
         parent_output = Parameter('parent_output', default=None)
         model_start_time = Parameter('model_start_time', default=None)
 
-        with case(model_start_time, None):
+        if model_start_time is None:
             model_start_time = start_time
+            logger.debug('No model start time, will set the model start time '
+                         'to start time: {0}'.format(str(start_time)))
 
         config_reader = ReadInConfig()
         tsmp_config = config_reader(config_path)
