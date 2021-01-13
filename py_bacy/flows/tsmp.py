@@ -148,7 +148,6 @@ def get_tsmp_flow():
 
 def get_tsmp_restart_flow():
     tsmp_flow, _ = get_tsmp_flow()
-    tsmp_restart_runner = RestartModelFlowRunner(tsmp_flow)
     with Flow('tsmp_restart_run') as restart_run:
         start_time = Parameter('start_time')
         end_time = Parameter('end_time')
@@ -157,19 +156,19 @@ def get_tsmp_restart_flow():
         name = Parameter('name')
         parent_model_name = Parameter('parent_model_name', default=None)
 
-        run_dir = construct_rundir(
-            name=name,
-            time=start_time,
-            cycle_config=cycle_config
-        )
-
-        output_dirs = tsmp_restart_runner(
-            name=name,
+        tsmp_config = config_reader(config_path)
+        model_steps = get_model_time_range(
             start_time=start_time,
             end_time=end_time,
-            run_dir=run_dir,
-            config_path=config_path,
-            cycle_config=cycle_config,
-            parent_model_name=parent_model_name,
+            model_config=tsmp_config
         )
-    return restart_run, output_dirs
+        looped_model_output = loop_model_runs(
+            model_flow=tsmp_flow,
+            name=name,
+            model_steps=model_steps,
+            parent_model_name=parent_model_name,
+            start_time=start_time,
+            config_path=config_path,
+            cycle_config=cycle_config
+        )
+    return restart_run, looped_model_output
