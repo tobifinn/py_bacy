@@ -82,8 +82,8 @@ def get_tsmp_flow():
             model_config=unmapped(tsmp_config)
         )
         with case(restart, True):
-            clm_bg_fname = get_clm_bg_fname(end_time)
-            cos_bg_fname = get_cos_bg_fname(tsmp_config, end_time)
+            clm_bg_fname = get_clm_bg_fname(model_start_time)
+            cos_bg_fname = get_cos_bg_fname(tsmp_config, model_start_time)
             linked_clm_restart = link_clm_restart.map(
                 parent_model_output=parent_dirs,
                 output_fname=unmapped(clm_bg_fname),
