@@ -47,7 +47,7 @@ def get_tsmp_flow():
 
         if model_start_time is None:
             model_start_time = start_time
-            context.logger.debug(
+            context.get('logger').debug(
                 'No model start time, will set the model start time to start '
                 'time: {0}'.format(str(start_time))
             )
