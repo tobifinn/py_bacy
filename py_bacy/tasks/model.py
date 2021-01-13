@@ -18,13 +18,12 @@ import datetime
 
 # External modules
 import prefect
-from prefect import Task, task
+from prefect import task, Flow
+from prefect.engine.signals import LOOP
 import pandas as pd
 
 # Internal modules
-from .general import construct_rundir, config_reader
 from .system import symlink
-from .utils import run_external_flow
 
 
 __all__ = [
@@ -32,9 +31,10 @@ __all__ = [
     'modify_namelist_template',
     'write_namelist',
     'initialize_namelist',
-    'RestartModelFlowRunner',
     'link_binaries',
-    'get_pids'
+    'get_pids',
+    'get_model_time_range',
+    'loop_model_runs',
 ]
 
 
@@ -149,103 +149,6 @@ def initialize_namelist(
     return namelist_path
 
 
-class RestartModelFlowRunner(Task):
-    def __init__(self, model_flow, **kwargs):
-        """
-        This flow runner is used to internally restart given model flow.
-
-        Parameters
-        ----------
-        model_flow : prefect.Flow
-            This model flow is the base flow, which is restarted.
-        **kwargs : Dict[Any, Any]
-            These additional keyword arguments are passed to the prefect.Task
-            constructor.
-        """
-        super().__init__(**kwargs)
-        self.model_flow = model_flow
-
-    def _get_timerange(
-            self,
-            start_time: datetime.datetime,
-            end_time: datetime.datetime,
-            restart_td: List[str]
-    ) -> List[datetime.datetime]:
-        """
-        Construct a list of time ranges which is used to determine the
-        start time steps of the model.
-
-        Parameters
-        ----------
-        start_time : datetime.datetime
-            This is the start time of the model where the model should be
-            originally started.
-        end_time : datetime.datetime
-            This is the end time of the model where the model run should
-            originally ended.
-        restart_td : List[str] 
-            This list of restart time deltas is used to construct the time 
-            steps of the model run. The last time delta is sequentially used 
-            to bridge the time to given end time.
-
-        Returns
-        -------
-        model_steps: List[datetime.datetime]
-            The model steps where the model started or restarted.
-        """
-        model_steps = [pd.to_datetime(start_time), ]
-        self.logger.debug('Got {0} as restart_td'.format(restart_td))
-        for td in restart_td[:-1]:
-            try:
-                curr_td = pd.to_timedelta(td)
-                new_step = model_steps[-1] + curr_td
-            except ValueError:
-                raise ValueError('Couldn\'t convert {0:s} into '
-                                 'timedelta'.format(td))
-            model_steps.append(new_step)
-        last_steps = pd.date_range(model_steps[-1], end_time,
-                                   freq=restart_td[-1])
-        model_steps = model_steps + list(last_steps[1:])
-        model_steps = [step.to_pydatetime() for step in model_steps]
-        return model_steps
-
-    def run(self,
-            name: str,
-            start_time: datetime.datetime,
-            end_time: datetime.datetime,
-            config_path: str,
-            cycle_config: Dict[str, Any],
-            parent_model_name: Union[str, None] = None,
-            **kwargs
-    ) -> str:
-        model_config = config_reader(config_path)
-        model_steps = self._get_timerange(
-            start_time, end_time, model_config['restart_td']
-        )
-        curr_parent_name = parent_model_name
-        curr_restart = False
-        for i, curr_model_start_time in enumerate(model_steps[:-1]):
-            try:
-                curr_end_time = model_steps[i+1]
-            except KeyError:
-                curr_end_time = end_time
-            _ = run_external_flow(
-                external_flow=self.model_flow,
-                start_time=start_time,
-                end_time=curr_end_time,
-                parent_model_name=curr_parent_name,
-                restart=curr_restart,
-                config_path=config_path,
-                cycle_config=cycle_config,
-                model_start_time=curr_model_start_time,
-                name=name,
-                **kwargs
-            )
-            curr_restart = True
-            curr_parent_name = name
-        return name
-
-
 @task
 def link_binaries(input_folder: str, model_config: Dict[str, Any]):
     """
@@ -283,3 +186,69 @@ def get_pids(run_dir: str) -> List[str]:
         pid_strings = pid_file.read()
     pids = [pid for pid in pid_strings.split('\n') if pid != '']
     return pids
+
+
+@task
+def get_model_time_range(
+        start_time: datetime.datetime,
+        end_time: datetime.datetime,
+        model_config: Dict[str, Any]
+) -> List[datetime.datetime]:
+    restart_td = model_config['restart_td']
+    model_steps = [pd.to_datetime(start_time), ]
+    prefect.context.logger.debug('Got {0} as restart_td'.format(restart_td))
+    for td in restart_td[:-1]:
+        try:
+            curr_td = pd.to_timedelta(td)
+            new_step = model_steps[-1] + curr_td
+        except ValueError:
+            raise ValueError('Couldn\'t convert {0:s} into '
+                             'timedelta'.format(td))
+        model_steps.append(new_step)
+    last_steps = pd.date_range(model_steps[-1], end_time,
+                               freq=restart_td[-1])
+    model_steps = model_steps + list(last_steps[1:])
+    model_steps = [step.to_pydatetime() for step in model_steps]
+    return model_steps
+
+
+@task
+def loop_model_runs(
+        model_flow: Flow,
+        name: str,
+        model_steps: List[datetime.datetime],
+        parent_model_name: Union[str, None] = None,
+        **kwargs
+) -> str:
+    logger = prefect.context.get('logger')
+
+    loop_payload = prefect.context.get("task_loop_result", {})
+    time_pos = loop_payload.get('time_pos', 0)
+    curr_parent_name = loop_payload.get('parent_name', parent_model_name)
+    curr_restart = loop_payload.get('restart', False)
+
+    logger.info('Current looped position: {0:d}'.format(time_pos))
+    logger.info('Current time: {0}'.format(model_steps[time_pos]))
+    logger.info('Waiting steps: {0}'.format(model_steps[time_pos+1:]))
+    if time_pos < len(model_steps):
+        curr_start_time = model_steps[time_pos]
+        curr_end_time = model_steps[time_pos+1]
+        _ = model_flow.run(
+            name=name,
+            parent_model_name=curr_parent_name,
+            restart=curr_restart,
+            model_start_time=model_steps[time_pos],
+            end_time=model_steps[time_pos+1],
+            **kwargs
+        )
+        raise LOOP(
+            message='Looped {0:s} for {1} -> {2}'.format(
+                name, curr_start_time, curr_end_time
+            ),
+            result={
+                'time_post': time_pos + 1,
+                'parent_name': name,
+                'restart': True
+            }
+        )
+    return name
