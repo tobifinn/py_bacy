@@ -228,9 +228,9 @@ def loop_model_runs(
     curr_parent_name = loop_payload.get('parent_name', parent_model_name)
     curr_restart = loop_payload.get('restart', False)
 
-    logger.info('Current looped position: {0:d}'.format(time_pos))
-    logger.info('Current time: {0}'.format(model_steps[time_pos]))
-    logger.info('Waiting steps: {0}'.format(model_steps[time_pos+1:]))
+    logger.debug('Current looped position: {0:d}'.format(time_pos))
+    logger.debug('Current time: {0}'.format(model_steps[time_pos]))
+    logger.debug('Waiting steps: {0}'.format(model_steps[time_pos+1:]))
     if time_pos < len(model_steps):
         curr_start_time = model_steps[time_pos]
         curr_end_time = model_steps[time_pos+1]
