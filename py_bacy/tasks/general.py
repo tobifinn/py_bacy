@@ -68,7 +68,7 @@ def get_parent_output(
     outer_dir = os.path.dirname(run_dir)
     analysis_dir = os.path.join(outer_dir, 'analysis')
     if parent_model_name is not None:
-        parent_path = os.path.join(parent_model_name, 'output')
+        parent_path = os.path.join(outer_dir, parent_model_name, 'output')
         logger.debug('Parent model output given')
     elif os.path.isdir(analysis_dir):
         parent_path = analysis_dir
