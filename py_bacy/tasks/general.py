@@ -30,7 +30,8 @@ __all__ = [
     'config_reader',
     'get_parent_output',
     'construct_rundir',
-    'construct_ensemble'
+    'construct_ensemble',
+    'check_output_files'
 ]
 
 
@@ -60,12 +61,12 @@ def get_parent_output(
         cycle_config: Dict[str, Any],
         run_dir: str,
         ens_suffix: str,
-        parent_output: Union[str, None] = None
+        parent_model_name: Union[str, None] = None
 ) -> str:
     outer_dir = os.path.dirname(run_dir)
     analysis_dir = os.path.join(outer_dir, 'analysis')
-    if parent_output:
-        parent_path = parent_output
+    if parent_model_name is not None:
+        parent_path = os.path.join(parent_model_name, 'output')
         prefect.context.logger.debug('Parent model output given')
     elif os.path.isdir(analysis_dir):
         parent_path = analysis_dir
