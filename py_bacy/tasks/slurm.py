@@ -18,7 +18,8 @@ import os
 import time
 
 # External modules
-from prefect import Task
+import prefect
+from prefect import Task, task
 
 # Internal modules
 
@@ -26,35 +27,25 @@ from prefect import Task
 logger = logging.getLogger(__name__)
 
 
-class CheckSlurmRuns(Task):
-    def __init__(self, sleep_time_in_sec: float = 5.0, **kwargs):
-        super().__init__(**kwargs)
-        self.sleep_time = sleep_time_in_sec
+__all__ = [
+    'check_slurm_running'
+]
 
-    def get_pids(self, pid_path: str) -> List[str]:
-        with open(pid_path, mode='r') as pid_file:
-            pid_strings = pid_file.read()
-        pids = [pid for pid in pid_strings.split('\n') if pid != '']
-        return pids
 
-    def check_heartbeat(self, pids: List[str]) -> bool:
-        running = False
+@task
+def check_slurm_running(
+        pids: List[str],
+        sleep_time: float = 5.0
+) -> Dict[str, bool]:
         pids_str = ','.join(pids)
-        squeue_output = subprocess.check_output(
-            ['squeue', '--jobs={0:s}'.format(pids_str)], text=True
-        )
-        pids_running = {pid: pid in squeue_output for pid in pids}
-        self.logger.debug('Running PIDS: {0}'.format(pids_running))
-        if any(pids_running.values()):
-            running = True
-        return running
-
-    def run(self, run_dir: str, folders: List[Dict[str, str]]) -> List[str]:
-        pid_path = os.path.join(run_dir, 'input', 'pid_file')
-        pids = self.get_pids(pid_path)
-        running = True
-        while running:
-            time.sleep(self.sleep_time)
-            running = self.check_heartbeat(pids)
-        output_folders = [folder_dict['output'] for folder_dict in folders]
-        return output_folders
+        pids_running = {pid: True for pid in pids}
+        while any(pids_running.values()):
+            time.sleep(sleep_time)
+            squeue_output = subprocess.check_output(
+                ['squeue', '--jobs={0:s}'.format(pids_str)], text=True
+            )
+            pids_running = {pid: pid in squeue_output for pid in pids}
+            prefect.context.logger.debug(
+                'Running PIDS: {0}'.format(pids_running)
+            )
+        return pids_running

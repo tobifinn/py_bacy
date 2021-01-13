@@ -33,7 +33,8 @@ __all__ = [
     'write_namelist',
     'initialize_namelist',
     'RestartModelFlowRunner',
-    'link_binaries'
+    'link_binaries',
+    'get_pids'
 ]
 
 
@@ -275,3 +276,12 @@ def link_binaries(input_folder: str, model_config: Dict[str, Any]):
             symlink(source_path, target_path)
             linked_binaries.append(target_path)
     return linked_binaries
+
+
+@task
+def get_pids(run_dir: str) -> List[str]:
+    pid_path = os.path.join(run_dir, 'input', 'pid_file')
+    with open(pid_path, mode='r') as pid_file:
+        pid_strings = pid_file.read()
+    pids = [pid for pid in pid_strings.split('\n') if pid != '']
+    return pids
