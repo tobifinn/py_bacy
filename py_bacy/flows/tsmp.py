@@ -146,7 +146,7 @@ def get_tsmp_flow():
                 'lffd*.nc_ana',
                 'lfff*.nc_fg'
             ]),
-            upstream_tasks=[pids_running]
+            upstream_tasks=[unmapped(pids_running)]
         )
     return tsmp_run
 
