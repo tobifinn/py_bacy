@@ -230,7 +230,7 @@ def loop_model_runs(
 
     logger.debug('Current looped position: {0:d}'.format(time_pos))
     logger.debug('Current time: {0}'.format(model_steps[time_pos]))
-    logger.debug('Waiting steps: {0}'.format(model_steps[time_pos+1:]))
+    logger.debug('Waiting steps: {0}'.format(model_steps[time_pos:]))
     if time_pos < len(model_steps):
         curr_start_time = model_steps[time_pos]
         curr_end_time = model_steps[time_pos+1]
