@@ -11,15 +11,17 @@
 
 
 # System modules
-import logging
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, Iterable, Tuple, List
 import os.path
+import glob
 
 # External modules
 import prefect
-from prefect import task, Flow
+from prefect import task
 
 import yaml
+
+import pandas as pd
 
 # Internal modules
 
@@ -27,7 +29,8 @@ import yaml
 __all__ = [
     'config_reader',
     'get_parent_output',
-    'run_external_flow'
+    'construct_rundir',
+    'construct_ensemble'
 ]
 
 
@@ -75,5 +78,107 @@ def get_parent_output(
 
 
 @task
-def run_external_flow(flow: Flow, **kwargs) -> Any:
-    return flow.run(**kwargs)
+def construct_rundir(
+        name: str,
+        time: pd.Timestamp,
+        cycle_config: Dict[str, Any]
+) -> str:
+    """
+    Construct a run directory structure where the run creates its input and
+    output files.
+
+    Parameters
+    ----------
+    name : str
+        The name of the run.
+    time : pd.Timestamp
+        This is the starting time of the run.
+    cycle_config : Dict[str, Any]
+        The path of the experiment is extracted from this cycle configuration
+        dictionary.
+
+    Returns
+    -------
+    run_dir : str
+        The constructed run dir based on the experiment path, given time,
+        and given run name.
+    """
+    run_dir = os.path.join(
+        cycle_config['EXPERIMENT']['path'],
+        time.strftime('%Y%m%d_%H%M'),
+        name
+    )
+    return run_dir
+
+
+@task
+def construct_ensemble(cycle_config: [str, Any]) -> Tuple[List[str], List[int]]:
+    """
+    Construct a list of ensemble suffixes and ensemble members.
+
+    Parameters
+    ----------
+    cycle_config : Dict[str, Any]
+        This cycle config is used to determine the number of ensemble members
+        and if there should be a deterministic run.
+
+    Returns
+    -------
+    suffixes : List[str]
+        This is the list of ensemble suffixes. Each ensemble member gets
+        `ens{0:03d}` as suffix, whereas a possible determinstic run is
+        prepended with `det` as suffix.
+    ens_range : List[int]
+        This is the list of ensemble member numbers. The counting of the
+        ensemble starts with 1. If a deterministic run is specified, a 0 is
+        prepended to this list.
+    """
+    try:
+        det_run = cycle_config['ENSEMBLE']['det']
+    except (TypeError, KeyError) as e:
+        det_run = False
+
+    if det_run:
+        ens_range = [0]
+        suffixes = ['det']
+    else:
+        ens_range = []
+        suffixes = []
+    ens_range += list(range(1, cycle_config['ENSEMBLE']['size'] + 1))
+    suffixes += [
+        'ens{0:03d}'.format(mem)
+        for mem in range(1, cycle_config['ENSEMBLE']['size'] + 1)
+    ]
+    return suffixes, ens_range
+
+
+@task
+def check_output_files(
+        output_folder: str,
+        file_regex: Iterable[str]
+) -> str:
+    """
+    Check if given files can be found within given output folder, based on
+    given file regexes.
+    If no corresponding file is found, an OSError is raised.
+
+    Parameters
+    ----------
+    output_folder : str
+        Files within this given folder are checked.
+    file_regex : Iterable[str]
+        The checker iterates over these file regexes. The file regexes have
+        to be evaluatable by glob.
+
+    Returns
+    -------
+    output_folder : str
+        The given output folder which was checked.
+    """
+    for regex in file_regex:
+        curr_path = os.path.join(output_folder, regex)
+        avail_files = list(glob.glob(curr_path))
+        if not avail_files:
+            raise OSError('No available files under regex {0:s} '
+                          'found!'.format(curr_path))
+    return output_folder
