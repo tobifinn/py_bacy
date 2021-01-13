@@ -247,7 +247,7 @@ def loop_model_runs(
                 name, curr_start_time, curr_end_time
             ),
             result={
-                'time_post': time_pos + 1,
+                'time_pos': time_pos + 1,
                 'parent_name': name,
                 'restart': True
             }
