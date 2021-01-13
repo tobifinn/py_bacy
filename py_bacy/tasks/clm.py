@@ -15,6 +15,8 @@ import typing
 import os.path
 
 # External modules
+from prefect import task
+
 import pandas as pd
 
 # Internal modules
@@ -28,6 +30,7 @@ __all__ = [
 ]
 
 
+@task
 def link_clm_restart(
         parent_model_output: str,
         output_fname: str,
@@ -59,6 +62,7 @@ def link_clm_restart(
     return clm_target
 
 
+@task
 def link_clm_initial(
         parent_model_output: str,
         model_start_time: pd.Timestamp,
@@ -92,6 +96,7 @@ def link_clm_initial(
     return clm_target
 
 
+@task
 def get_clm_bg_fname(end_time: pd.Timestamp) -> str:
     """
     This task is used to construct the file name of the CLM background files.
