@@ -13,7 +13,7 @@
 # System modules
 import logging
 import os
-from typing import Iterable, List
+from typing import List, Tuple
 import tempfile
 
 # External modules
@@ -28,8 +28,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     'symlink',
     'create_folders',
-    'create_directory_structure',
-
+    'create_input_output',
 ]
 
 
@@ -104,11 +103,10 @@ def create_folders(dir_path: str) -> str:
 
 
 @task
-def create_directory_structure(
-        directories: Iterable[str],
+def create_input_output(
         run_dir: str,
         ens_suffix: str,
-) -> List[str]:
+) -> Tuple[str, str]:
     """
     Construct a directory structure for PyBaCy. The structure is
     iteratively created by: `run_dir/dir/ens_suffix` where dir is the
@@ -116,8 +114,6 @@ def create_directory_structure(
 
     Parameters
     ----------
-    directories : Iterable[str]
-        These directories are created with this function.
     run_dir : str
         This is the basis directory, where the ensemble suffixes and
         directories are created
@@ -130,9 +126,8 @@ def create_directory_structure(
     created_directories : List[str]
         These are the paths to the created directories.
     """
-    created_directories = []
-    for dir_name in directories:
-        dir_path = os.path.join(run_dir, dir_name, ens_suffix)
-        _ = create_folders(dir_path)
-        created_directories.append(dir_path)
+    created_directories = (
+        create_folders(os.path.join(run_dir, 'input', ens_suffix)),
+        create_folders(os.path.join(run_dir, 'output', ens_suffix)),
+    )
     return created_directories
