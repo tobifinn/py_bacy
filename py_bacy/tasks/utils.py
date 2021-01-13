@@ -24,14 +24,14 @@ logger = logging.getLogger(__name__)
 
 
 @task
-def run_external_flow(flow: Flow, **kwargs) -> Any:
+def run_external_flow(external_flow: Flow, **kwargs) -> Any:
     """
     This task runs a given external prefect.Flow with given additional
     keyword arguments.
 
     Parameters
     ----------
-    flow : prefect.Flow
+    external_flow : prefect.Flow
         This prefect flow is run with given additional keyword arguments.
     **kwargs
         These additional keyword arguments are passed to the run method of
@@ -41,4 +41,4 @@ def run_external_flow(flow: Flow, **kwargs) -> Any:
     -------
     The output of flow's run method is returned.
     """
-    return flow.run(**kwargs)
+    return external_flow.run(**kwargs)
