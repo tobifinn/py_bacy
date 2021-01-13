@@ -106,7 +106,7 @@ def link_cos_initial(
 @task
 def get_cos_bg_fname(
         model_config: Dict[str, Any],
-        analysis_time: pd.Timestamp
+        end_time: pd.Timestamp
 ) -> str:
     """
     This task is used to construct the file name of the COSMO background files.
@@ -116,7 +116,7 @@ def get_cos_bg_fname(
     model_config : Dict[str, Any]
         This model configuration dictionary specifies the background file name
         under [COSMO][bg_files].
-    analysis_time : pd.Timestamp
+    end_time : pd.Timestamp
         The time of this timestamp is inserted into the bg_files regex.
 
     Returns
@@ -124,5 +124,5 @@ def get_cos_bg_fname(
     bg_fname : str
         The constructed background file name.
     """
-    bg_fname = analysis_time.strftime(model_config['COSMO']['bg_files'])
+    bg_fname = end_time.strftime(model_config['COSMO']['bg_files'])
     return bg_fname
