@@ -15,6 +15,7 @@ import logging
 
 # External modules
 from prefect import Flow, Parameter, unmapped, context, case
+from prefect.tasks.control_flow import merge
 
 # Internal modules
 from py_bacy.tasks.clm import *
@@ -83,12 +84,12 @@ def get_tsmp_flow():
         with case(restart, True):
             clm_bg_fname = get_clm_bg_fname(end_time)
             cos_bg_fname = get_cos_bg_fname(tsmp_config, end_time)
-            linked_clm_initial = link_clm_restart.map(
+            linked_clm_restart = link_clm_restart.map(
                 parent_model_output=parent_dirs,
                 output_fname=unmapped(clm_bg_fname),
                 input_folder=input_dirs
             )
-            linked_cos_initial = link_cos_restart.map(
+            linked_cos_restart = link_cos_restart.map(
                 parent_model_output=parent_dirs,
                 output_fname=unmapped(cos_bg_fname),
                 input_folder=input_dirs,
@@ -105,6 +106,8 @@ def get_tsmp_flow():
                 parent_model_output=parent_dirs,
                 model_start_time=unmapped(model_start_time),
             )
+        linked_clm_start = merge(linked_clm_restart, linked_clm_initial)
+        linked_cos_start = merge(linked_cos_restart, linked_cos_initial)
 
         placeholder_dict = create_tsmp_placeholders(
             name=name,
@@ -132,8 +135,8 @@ def get_tsmp_flow():
             run_dir=run_dir,
             upstream_tasks=[
                 namelist_paths,
-                linked_clm_initial,
-                linked_cos_initial,
+                linked_clm_start,
+                linked_cos_start,
                 linked_binaries
             ]
         )
