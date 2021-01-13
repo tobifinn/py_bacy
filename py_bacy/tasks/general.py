@@ -136,10 +136,13 @@ def construct_ensemble(cycle_config: [str, Any]) -> Tuple[List[str], List[int]]:
         ensemble starts with 1. If a deterministic run is specified, a 0 is
         prepended to this list.
     """
+    logger = prefect.context.get('logger')
     try:
         det_run = cycle_config['ENSEMBLE']['det']
+        logger.debug('Determinstic run is set to {0}'.format(det_run))
     except (TypeError, KeyError) as e:
         det_run = False
+        logger.debug('Couldn`t find det run keyword within cycle config')
 
     if det_run:
         ens_range = [0]
@@ -147,6 +150,9 @@ def construct_ensemble(cycle_config: [str, Any]) -> Tuple[List[str], List[int]]:
     else:
         ens_range = []
         suffixes = []
+    logger.debug(
+        'Got {0} as ensemble size'.format(cycle_config['ENSEMBLE']['size'])
+    )
     ens_range += list(range(1, cycle_config['ENSEMBLE']['size'] + 1))
     suffixes += [
         'ens{0:03d}'.format(mem)
