@@ -215,16 +215,14 @@ class RestartModelFlowRunner(Task):
             end_time: datetime.datetime,
             config_path: str,
             cycle_config: Dict[str, Any],
-            parent_output: Union[str, None] = None,
+            parent_model_name: Union[str, None] = None,
             **kwargs
     ) -> str:
         model_config = config_reader(config_path)
         model_steps = self._get_timerange(
             start_time, end_time, model_config['restart_td']
         )
-        run_dir = construct_rundir(name, start_time, cycle_config)
-        run_output_dir = os.path.join(run_dir, 'output')
-        curr_parent_output = parent_output
+        curr_parent_name = parent_model_name
         curr_restart = False
         for i, curr_model_start_time in enumerate(model_steps[:-1]):
             try:
@@ -232,10 +230,10 @@ class RestartModelFlowRunner(Task):
             except KeyError:
                 curr_end_time = end_time
             _ = run_external_flow(
-                flow=self.model_flow,
+                external_flow=self.model_flow,
                 start_time=start_time,
                 end_time=curr_end_time,
-                parent_output=curr_parent_output,
+                parent_model_name=curr_parent_name,
                 restart=curr_restart,
                 config_path=config_path,
                 cycle_config=cycle_config,
@@ -244,8 +242,8 @@ class RestartModelFlowRunner(Task):
                 **kwargs
             )
             curr_restart = True
-            curr_parent_output = run_output_dir
-        return run_output_dir
+            curr_parent_name = name
+        return name
 
 
 @task
