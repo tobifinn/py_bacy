@@ -66,7 +66,7 @@ def get_tsmp_flow():
             run_dir=unmapped(run_dir),
             ens_suffix=ens_suffix
         )
-        input_dirs, output_dir = unzip_mapped_result(
+        input_dirs, output_dirs = unzip_mapped_result(
             zipped_directories, task_args=dict(nout=2)
         )
         parent_dirs = get_parent_output.map(
@@ -148,11 +148,11 @@ def get_tsmp_flow():
             ]),
             upstream_tasks=[pids_running]
         )
-    return tsmp_run, output_dirs
+    return tsmp_run
 
 
 def get_tsmp_restart_flow():
-    tsmp_flow, _ = get_tsmp_flow()
+    tsmp_flow = get_tsmp_flow()
     with Flow('tsmp_restart_run') as restart_run:
         start_time = Parameter('start_time')
         end_time = Parameter('end_time')
@@ -176,4 +176,4 @@ def get_tsmp_restart_flow():
             config_path=config_path,
             cycle_config=cycle_config
         )
-    return restart_run, looped_model_output
+    return restart_run
