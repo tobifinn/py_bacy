@@ -58,7 +58,7 @@ def link_clm_restart(
     """
     clm_source = os.path.join(parent_model_output, output_fname)
     clm_target = os.path.join(input_folder, 'clm_in.nc')
-    symlink(clm_source, clm_target)
+    symlink.run(clm_source, clm_target)
     return clm_target
 
 
@@ -92,7 +92,7 @@ def link_clm_initial(
     )
     clm_source = os.path.join(parent_model_output, clm_out_file)
     clm_target = os.path.join(input_folder, 'clm_in.nc')
-    symlink(clm_source, clm_target)
+    symlink.run(clm_source, clm_target)
     return clm_target
 
 

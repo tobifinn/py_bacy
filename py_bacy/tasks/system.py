@@ -129,7 +129,7 @@ def create_input_output(
         These are the paths to the created directories.
     """
     created_directories = (
-        create_folders(os.path.join(run_dir, 'input', ens_suffix)),
-        create_folders(os.path.join(run_dir, 'output', ens_suffix)),
+        create_folders.run(os.path.join(run_dir, 'input', ens_suffix)),
+        create_folders.run(os.path.join(run_dir, 'output', ens_suffix)),
     )
     return created_directories

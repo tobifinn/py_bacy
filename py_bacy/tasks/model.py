@@ -174,7 +174,7 @@ def link_binaries(input_folder: str, model_config: Dict[str, Any]):
             source_path = bin_file.path
             file_name = os.path.basename(source_path)
             target_path = os.path.join(input_folder, file_name)
-            symlink(source_path, target_path)
+            symlink.run(source_path, target_path)
             linked_binaries.append(target_path)
     return linked_binaries
 

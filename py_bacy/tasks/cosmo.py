@@ -68,7 +68,7 @@ def link_cos_restart(
     )
     cos_source = list(sorted(glob.glob(cos_search_path)))[0]
     cos_target = os.path.join(input_folder, laf_file)
-    symlink(cos_source, cos_target)
+    symlink.run(cos_source, cos_target)
     return cos_target
 
 
@@ -99,7 +99,7 @@ def link_cos_initial(
     laf_file = model_start_time.strftime('laf%Y%m%d%H%M%S.nc')
     cos_source = os.path.join(parent_model_output, laf_file)
     cos_target = os.path.join(input_folder, laf_file)
-    symlink(cos_source, cos_target)
+    symlink.run(cos_source, cos_target)
     return cos_target
 
 
