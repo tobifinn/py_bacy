@@ -234,25 +234,22 @@ def loop_model_runs(
     if time_pos < len(model_steps):
         curr_start_time = model_steps[time_pos]
         curr_end_time = model_steps[time_pos+1]
-        try:
-            _ = model_flow.run(
-                name=name,
-                parent_model_name=curr_parent_name,
-                restart=curr_restart,
-                model_start_time=model_steps[time_pos],
-                end_time=model_steps[time_pos+1],
-                **kwargs
-            )
-            raise LOOP(
-                message='Looped {0:s} for {1} -> {2}'.format(
-                    name, curr_start_time, curr_end_time
-                ),
-                result={
-                    'time_post': time_pos + 1,
-                    'parent_name': name,
-                    'restart': True
-                }
-            )
-        except Exception as e:
-            raise e
+        _ = model_flow.run(
+            name=name,
+            parent_model_name=curr_parent_name,
+            restart=curr_restart,
+            model_start_time=model_steps[time_pos],
+            end_time=model_steps[time_pos+1],
+            **kwargs
+        )
+        raise LOOP(
+            message='Looped {0:s} for {1} -> {2}'.format(
+                name, curr_start_time, curr_end_time
+            ),
+            result={
+                'time_post': time_pos + 1,
+                'parent_name': name,
+                'restart': True
+            }
+        )
     return name
