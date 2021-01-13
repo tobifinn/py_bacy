@@ -105,9 +105,9 @@ def create_folders(dir_path: str) -> str:
 
 @task
 def create_directory_structure(
+        directories: Iterable[str],
         run_dir: str,
         ens_suffix: str,
-        directories: Iterable[str]
 ) -> List[str]:
     """
     Construct a directory structure for PyBaCy. The structure is
@@ -116,14 +116,14 @@ def create_directory_structure(
 
     Parameters
     ----------
+    directories : Iterable[str]
+        These directories are created with this function.
     run_dir : str
         This is the basis directory, where the ensemble suffixes and
         directories are created
     ens_suffix : str
         This is the ensemble suffix that is appended to given run dir and
         directory.
-    directories : Iterable[str]
-        These directories are created with this function.
 
     Returns
     -------
