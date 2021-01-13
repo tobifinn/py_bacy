@@ -158,6 +158,12 @@ def construct_ensemble(cycle_config: [str, Any]) -> Tuple[List[str], List[int]]:
         'ens{0:03d}'.format(mem)
         for mem in range(1, cycle_config['ENSEMBLE']['size'] + 1)
     ]
+    logger.debug(
+        'Construct {0} as ens range'.format(ens_range)
+    )
+    logger.debug(
+        'Construct {0} as ens suffixes'.format(suffixes)
+    )
     return suffixes, ens_range
 
 

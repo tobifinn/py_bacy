@@ -128,8 +128,12 @@ def create_input_output(
     created_directories : List[str]
         These are the paths to the created directories.
     """
+    logger = prefect.context.get('logger')
     created_directories = (
         create_folders.run(os.path.join(run_dir, 'input', ens_suffix)),
         create_folders.run(os.path.join(run_dir, 'output', ens_suffix)),
+    )
+    logger.debug(
+        'Created following directory: {0:s}'.format(created_directories)
     )
     return created_directories
