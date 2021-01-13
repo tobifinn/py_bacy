@@ -23,6 +23,7 @@ import pandas as pd
 
 # Internal modules
 from .general import construct_rundir, config_reader
+from .system import symlink
 from .utils import run_external_flow
 
 
@@ -31,7 +32,8 @@ __all__ = [
     'modify_namelist_template',
     'write_namelist',
     'initialize_namelist',
-    'RestartModelFlowRunner'
+    'RestartModelFlowRunner',
+    'link_binaries'
 ]
 
 
@@ -243,3 +245,33 @@ class RestartModelFlowRunner(Task):
             curr_restart = True
             curr_parent_output = run_output_dir
         return run_output_dir
+
+
+@task
+def link_binaries(input_folder: str, model_config: Dict[str, Any]):
+    """
+    Link the binaries of the model into given input folder. All files within
+    the specified directory are linked to the input folder.
+
+    Parameters
+    ----------
+    input_folder : str
+        The binaries are linked into this folder.
+    model_config : Dict[str, Any]
+        This cofiguration dictionary is used to determine with the `program`
+        keyword the folder, where the binaries are stored.
+
+    Returns
+    -------
+    linked_binaries : List[str]
+        The paths to the linked binaries.
+    """
+    linked_binaries = []
+    with os.scandir(model_config['program']) as bin_files:
+        for bin_file in bin_files:
+            source_path = bin_file.path
+            file_name = os.path.basename(source_path)
+            target_path = os.path.join(input_folder, file_name)
+            symlink(source_path, target_path)
+            linked_binaries.append(target_path)
+    return linked_binaries
