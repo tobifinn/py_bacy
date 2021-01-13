@@ -11,146 +11,156 @@
 
 
 # System modules
-import logging
 import os.path
-from typing import Dict, Any, Tuple, Union, List, Iterable
+from typing import Dict, Any, Union, List
 import subprocess
-import glob
 import datetime
 
 # External modules
-from prefect import Task
+import prefect
+from prefect import Task, task
 import pandas as pd
 
 # Internal modules
-from .general import FlowRunner, ReadInConfig
+from .general import construct_rundir, config_reader
+from .utils import run_external_flow
 
 
 __all__ = [
-    'ModifyNamelist',
-    'InitializeNamelist',
-    'CreateDirectoryStructure',
-    'ConstructEnsemble',
-    'CheckOutput',
+    'readin_namelist_template',
+    'modify_namelist_template',
+    'write_namelist',
+    'initialize_namelist',
     'RestartModelFlowRunner'
 ]
 
 
-class ModifyNamelist(Task):
-    @staticmethod
-    def get_template(template_path) -> str:
-        with open(template_path, mode='r') as template_file:
-            template = template_file.read()
-        return template
+@task
+def readin_namelist_template(model_config: Dict[str, Any]) -> str:
+    """
+    The template specified within the `template` keyword in the
+    `model_config` is read-in as namelist template.
+    The placeholders within this template have to be specified by
+    %PLACEHOLDER_NAME%.
+    The placeholders are model specific.
 
-    def run(
-            self,
-            model_config: Dict[str, Any],
-            placeholder_dict: Dict[str, Any]
-    ) -> str:
-        template = self.get_template(model_config['template'])
-        for placeholder, value in placeholder_dict.items():
-            template = template.replace(placeholder, str(value))
-        return template
+    Parameters
+    ----------
+    model_config : Dict[str, Any]
+        The `template` keyword from this directory is read-in.
 
-
-class InitializeNamelist(Task):
-    def __init__(self, namelist_name: str, **kwargs):
-        super().__init__(**kwargs)
-        self.namelist_name = namelist_name
-
-    def write_template(self, namelist: str, target_path: str) -> None:
-        with open(target_path, mode='w+') as target_file:
-            target_file.write(namelist)
-            self.logger.debug(
-                'Wrote the template to: {0:s}'.format(target_path)
-            )
-        subprocess.call(['chmod', '755', target_path])
-
-    def run(
-            self,
-            namelist: str,
-            input_folder: str,
-            mem: int=0,
-            **path_kwargs
-    ):
-        target_path = os.path.join(input_folder, self.namelist_name)
-        self.write_template(namelist=namelist, target_path=target_path)
-        _ = subprocess.check_call([target_path, '{0:d}'.format(mem)])
-        return target_path
+    Returns
+    -------
+    template : str
+        The read-in namelist template.
+    """
+    template_path = model_config['template']
+    with open(template_path, mode='r') as template_file:
+        template = template_file.read()
+    return template
 
 
-class CreateDirectoryStructure(Task):
-    def __init__(self, directories: Iterable[str], **kwargs: Any):
-        super().__init__(**kwargs)
-        self.directories = directories
+@task
+def modify_namelist_template(
+        namelist_template: str,
+        placeholder_dict: Dict[str, Any]
+):
+    """
+    Placeholders in the form of %PLACEHOLDER_NAME% are replaced within the
+    given namelist template.
 
-    @staticmethod
-    def _create_folder(initialized_path):
-        if not os.path.isdir(initialized_path):
-            os.makedirs(initialized_path)
-        if not os.path.isdir(initialized_path):
-            raise OSError(
-                'Couldn\'t initialize the directory path {0:s}'.format(
-                    initialized_path
-                )
-            )
-        return initialized_path
+    Parameters
+    ----------
+    namelist_template : str
+        Placeholders within this template are replaced by the given value.
+    placeholder_dict : Dict[str, Any]
+        This is the directory with the placeholder values. A placeholder is
+        skipped if it is not found within given namelist template. The values
+        have to be castable to string type.
 
-    def run(
-            self,
-            run_dir: str,
-            ens_suffix: str,
-    ) -> Dict[str, str]:
-        structure = dict()
-        for dir_name in self.directories:
-            dir_path = os.path.join(run_dir, dir_name, ens_suffix)
-            _ = self._create_folder(dir_path)
-            structure[dir_name] = dir_path
-        return structure
+    Returns
+    -------
+    namelist_template : str
+        The namelist where the placeholders are replaced with given values.
+    """
+    for placeholder, value in placeholder_dict.items():
+        namelist_template = namelist_template.replace(placeholder, str(value))
+    return namelist_template
 
 
-class ConstructEnsemble(Task):
-    @staticmethod
-    def _deterministic_run(cycle_config: Dict[str, Any]) -> bool:
-        try:
-            return cycle_config['ENSEMBLE']['det']
-        except (TypeError, KeyError) as e:
-            return False
+@task
+def write_namelist(target_folder: str, namelist_name: str, namelist: str):
+    """
+    This function writes a given namelist to a namelist path. The namelist
+    path is constructed based on a given target folder and namelist name.
+    The namelist automatically gets `755` as mode.
 
-    def run(self, cycle_config: Dict[str, Any]) -> Tuple[List[str], List[int]]:
-        if self._deterministic_run(cycle_config):
-            ens_range = [0]
-            suffixes = ['det']
-        else:
-            ens_range = []
-            suffixes = []
-        ens_range += list(range(1, cycle_config['ENSEMBLE']['size']+1))
-        suffixes += [
-            'ens{0:03d}'.format(mem)
-            for mem in range(1, cycle_config['ENSEMBLE']['size']+1)
-        ]
-        return suffixes, ens_range
+    Parameters
+    ----------
+    target_folder : str
+        The namelist is written to this target folder. Normally, this is the
+        input folder of a model run.
+    namelist_name : str
+        This is the namelist name under which the namelist should be stored.
+    namelist : str
+        This namelist is stored under the constructed target path.
 
-
-class CheckOutput(Task):
-    def __init__(self, output_regex: Iterable[str], **kwargs):
-        super().__init__(**kwargs)
-        self.output_regex = output_regex
-
-    def run(self, output_folder: str) -> str:
-        for regex in self.output_regex:
-            curr_path = os.path.join(output_folder, regex)
-            avail_files = list(glob.glob(curr_path))
-            if not avail_files:
-                raise OSError('No available files under regex {0:s} '
-                              'found!'.format(curr_path))
-        return output_folder
+    Returns
+    -------
+    target_path : str
+        The constructed target path where the namelist is stored.
+    """
+    target_path = os.path.join(target_folder, namelist_name)
+    with open(target_path, mode='w') as target_file:
+        target_file.write(namelist)
+        prefect.context.logger.debug(
+            'Wrote the template to: {0:s}'.format(target_path)
+        )
+    subprocess.call(['chmod', '755', target_path])
+    return target_path
 
 
-class RestartModelFlowRunner(FlowRunner):
+@task
+def initialize_namelist(
+        namelist_path: str,
+        ens_mem: int = 0
+):
+    """
+    This function calls a given namelist path with given ensemble member as
+    argument.
+
+    Parameters
+    ----------
+    namelist_path : str
+        This namelist is called.
+    ens_mem : int
+        This is the ensemble member which is used as argument for the
+        namelist call.
+
+    Returns
+    -------
+    namelist_path : str
+        This called namelist path.
+    """
+    _ = subprocess.check_call([namelist_path, '{0:d}'.format(ens_mem)])
+    return namelist_path
+
+
+class RestartModelFlowRunner(Task):
     def __init__(self, model_flow, **kwargs):
-        super().__init__(flow=model_flow, **kwargs)
+        """
+        This flow runner is used to internally restart given model flow.
+
+        Parameters
+        ----------
+        model_flow : prefect.Flow
+            This model flow is the base flow, which is restarted.
+        **kwargs : Dict[Any, Any]
+            These additional keyword arguments are passed to the prefect.Task
+            constructor.
+        """
+        super().__init__(**kwargs)
+        self.model_flow = model_flow
 
     def _get_timerange(
             self,
@@ -158,6 +168,28 @@ class RestartModelFlowRunner(FlowRunner):
             end_time: datetime.datetime,
             restart_td: List[str]
     ) -> List[datetime.datetime]:
+        """
+        Construct a list of time ranges which is used to determine the
+        start time steps of the model.
+
+        Parameters
+        ----------
+        start_time : datetime.datetime
+            This is the start time of the model where the model should be
+            originally started.
+        end_time : datetime.datetime
+            This is the end time of the model where the model run should
+            originally ended.
+        restart_td : List[str] 
+            This list of restart time deltas is used to construct the time 
+            steps of the model run. The last time delta is sequentially used 
+            to bridge the time to given end time.
+
+        Returns
+        -------
+        model_steps: List[datetime.datetime]
+            The model steps where the model started or restarted.
+        """
         model_steps = [pd.to_datetime(start_time), ]
         self.logger.debug('Got {0} as restart_td'.format(restart_td))
         for td in restart_td[:-1]:
@@ -178,16 +210,17 @@ class RestartModelFlowRunner(FlowRunner):
             name: str,
             start_time: datetime.datetime,
             end_time: datetime.datetime,
-            run_dir: str,
             config_path: str,
             cycle_config: Dict[str, Any],
             parent_output: Union[str, None] = None,
             **kwargs
     ) -> str:
-        model_config = ReadInConfig().run(config_path)
+        model_config = config_reader(config_path)
         model_steps = self._get_timerange(
             start_time, end_time, model_config['restart_td']
         )
+        run_dir = construct_rundir(name, start_time, cycle_config)
+        run_output_dir = os.path.join(run_dir, 'output')
         curr_parent_output = parent_output
         curr_restart = False
         for i, curr_model_start_time in enumerate(model_steps[:-1]):
@@ -195,7 +228,8 @@ class RestartModelFlowRunner(FlowRunner):
                 curr_end_time = model_steps[i+1]
             except KeyError:
                 curr_end_time = end_time
-            _ = super().run(
+            _ = run_external_flow(
+                flow=self.model_flow,
                 start_time=start_time,
                 end_time=curr_end_time,
                 parent_output=curr_parent_output,
@@ -207,5 +241,5 @@ class RestartModelFlowRunner(FlowRunner):
                 **kwargs
             )
             curr_restart = True
-            curr_parent_output = os.path.join(run_dir, 'output')
-        return os.path.join(run_dir, 'output')
+            curr_parent_output = run_output_dir
+        return run_output_dir
