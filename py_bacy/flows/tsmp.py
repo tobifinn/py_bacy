@@ -24,6 +24,7 @@ from py_bacy.tasks.model import *
 from py_bacy.tasks.slurm import *
 from py_bacy.tasks.system import *
 from py_bacy.tasks.tsmp import *
+from py_bacy.tasks.utils import *
 
 
 logger = logging.getLogger(__name__)
@@ -60,9 +61,13 @@ def get_tsmp_flow():
         )
 
         ens_suffix, ens_range = construct_ensemble(cycle_config=cycle_config)
-        input_dirs, output_dirs = create_input_output.map(
+        zipped_directories = create_directory_structure.map(
+            directories=unmapped(('input', 'output')),
             run_dir=unmapped(run_dir),
             ens_suffix=ens_suffix
+        )
+        input_dirs, output_dir = unzip_mapped_result(
+            zipped_directories, task_args=dict(nout=2)
         )
         parent_dirs = get_parent_output.map(
             cycle_config=unmapped(cycle_config),

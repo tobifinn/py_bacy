@@ -13,7 +13,7 @@
 # System modules
 import logging
 import os
-from typing import List, Tuple
+from typing import List, Iterable
 import tempfile
 
 # External modules
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 __all__ = [
     'symlink',
     'create_folders',
-    'create_input_output',
+    'create_directory_structure',
 ]
 
 
@@ -105,10 +105,11 @@ def create_folders(dir_path: str) -> str:
 
 
 @task
-def create_input_output(
+def create_directory_structure(
+        directories: Iterable[str],
         run_dir: str,
         ens_suffix: str,
-) -> Tuple[str, str]:
+) -> List[str]:
     """
     Construct a directory structure for PyBaCy. The structure is
     iteratively created by: `run_dir/dir/ens_suffix` where dir is the
@@ -116,6 +117,8 @@ def create_input_output(
 
     Parameters
     ----------
+    directories : Iterable[str]
+        These directories are created with this function.
     run_dir : str
         This is the basis directory, where the ensemble suffixes and
         directories are created
@@ -128,12 +131,12 @@ def create_input_output(
     created_directories : List[str]
         These are the paths to the created directories.
     """
-    logger = prefect.context.get('logger')
-    created_directories = (
-        create_folders.run(os.path.join(run_dir, 'input', ens_suffix)),
-        create_folders.run(os.path.join(run_dir, 'output', ens_suffix)),
-    )
-    logger.debug(
-        'Created following directory: {0:s}'.format(created_directories)
-    )
+    created_directories = []
+    for dir_name in directories:
+        dir_path = os.path.join(run_dir, dir_name, ens_suffix)
+        _ = create_folders.run(dir_path)
+        created_directories.append(dir_path)
     return created_directories
+
+
+
