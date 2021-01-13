@@ -11,20 +11,15 @@
 
 
 # System modules
-import logging
 import subprocess
 from typing import Dict, List
-import os
 import time
 
 # External modules
 import prefect
-from prefect import Task, task
+from prefect import task
 
 # Internal modules
-
-
-logger = logging.getLogger(__name__)
 
 
 __all__ = [
@@ -45,7 +40,8 @@ def check_slurm_running(
                 ['squeue', '--jobs={0:s}'.format(pids_str)], text=True
             )
             pids_running = {pid: pid in squeue_output for pid in pids}
-            prefect.context.logger.debug(
+            logger = prefect.context.get('logger')
+            logger.debug(
                 'Running PIDS: {0}'.format(pids_running)
             )
         return pids_running

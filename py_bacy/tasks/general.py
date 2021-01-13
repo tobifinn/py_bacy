@@ -37,8 +37,9 @@ __all__ = [
 
 @task
 def config_reader(config_path: Union[None, str]) -> Dict[str, Any]:
+    logger = prefect.context.get('logger')
     if config_path is None:
-        prefect.context.logger.info(
+        logger.info(
             'No config path given, I will return an empty config dictionary'
         )
         return dict()
@@ -47,7 +48,7 @@ def config_reader(config_path: Union[None, str]) -> Dict[str, Any]:
         config = yaml.load(yaml_file, Loader=yaml.FullLoader)
         yaml_file.close()
     except FileNotFoundError as e:
-        prefect.context.logger.error(
+        logger.error(
             'The config file {0:s} couldn\'t be found'.format(
                 config_path
             )
@@ -63,17 +64,18 @@ def get_parent_output(
         ens_suffix: str,
         parent_model_name: Union[str, None] = None
 ) -> str:
+    logger = prefect.context.get('logger')
     outer_dir = os.path.dirname(run_dir)
     analysis_dir = os.path.join(outer_dir, 'analysis')
     if parent_model_name is not None:
         parent_path = os.path.join(parent_model_name, 'output')
-        prefect.context.logger.debug('Parent model output given')
+        logger.debug('Parent model output given')
     elif os.path.isdir(analysis_dir):
         parent_path = analysis_dir
-        prefect.context.logger.debug('Analysis directory given')
+        logger.debug('Analysis directory given')
     else:
         parent_path = cycle_config['EXPERIMENT']['path_init']
-        prefect.context.logger.debug('Initial data directory given')
+        logger.debug('Initial data directory given')
     parent_path = os.path.join(parent_path, ens_suffix)
     return parent_path
 

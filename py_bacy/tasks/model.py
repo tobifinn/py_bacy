@@ -194,9 +194,10 @@ def get_model_time_range(
         end_time: datetime.datetime,
         model_config: Dict[str, Any]
 ) -> List[datetime.datetime]:
+    logger = prefect.context.get('logger')
     restart_td = model_config['restart_td']
     model_steps = [pd.to_datetime(start_time), ]
-    prefect.context.logger.debug('Got {0} as restart_td'.format(restart_td))
+    logger.debug('Got {0} as restart_td'.format(restart_td))
     for td in restart_td[:-1]:
         try:
             curr_td = pd.to_timedelta(td)

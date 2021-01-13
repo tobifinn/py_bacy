@@ -17,7 +17,8 @@ from typing import List, Tuple
 import tempfile
 
 # External modules
-from prefect import task, context
+import prefect
+from prefect import task
 
 # Internal modules
 
@@ -62,7 +63,8 @@ def symlink(source: str, target: str) -> str:
                 source
             )
         )
-    context.logger.debug('Symlink: {0:s} -> {1:s}'.format(source, target))
+    logger = prefect.context.get('logger')
+    logger.debug('Symlink: {0:s} -> {1:s}'.format(source, target))
     temp_name = next(tempfile._get_candidate_names())
     tmp_file = os.path.join(os.path.dirname(target), temp_name)
     os.symlink(source, tmp_file)

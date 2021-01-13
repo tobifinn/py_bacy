@@ -63,7 +63,7 @@ def link_cos_restart(
     """
     laf_file = model_start_time.strftime('laf%Y%m%d%H%M%S.nc')
     cos_search_path = os.path.join(parent_model_output, output_fname)
-    prefect.context.logger.debug(
+    prefect.context.get('logger').debug(
         'COSMO search path: {0:s}'.format(cos_search_path)
     )
     cos_source = list(sorted(glob.glob(cos_search_path)))[0]
