@@ -46,6 +46,7 @@ def get_pytassim_flow(
         config_path = Parameter('config_path')
         cycle_config = Parameter('cycle_config')
         name = Parameter('name')
+        use_fg = Parameter('use_fg', default=True)
         parent_model_name = Parameter('parent_model_name', default=None)
     
         pytassim_config = config_reader(config_path)
@@ -126,20 +127,22 @@ def get_pytassim_flow(
             client=client
         )
 
-        ds_fg = load_first_guess(
-            fg_files=linked_fg_files,
-            obs_window=obs_window,
-            assim_config=pytassim_config,
-            cycle_config=cycle_config,
-            client=client
-        )
+        with case(use_fg, True):
+            ds_fg = load_first_guess(
+                fg_files=linked_fg_files,
+                obs_window=obs_window,
+                assim_config=pytassim_config,
+                cycle_config=cycle_config,
+                client=client
+            )
+        ds_fg = merge(ds_fg, None)
 
-        obs_diagnostics = info_observations(
-            first_guess=ds_fg,
-            observations=ds_obs,
-            run_dir=run_dir,
-            client=client
-        )
+        # obs_diagnostics = info_observations(
+        #     first_guess=ds_fg,
+        #     observations=ds_obs,
+        #     run_dir=run_dir,
+        #     client=client
+        # )
 
         ds_ana = assimilate(
             assimilation=assimilation,
@@ -163,12 +166,12 @@ def get_pytassim_flow(
             client=client
         )
 
-        assimilation_diagnostics = info_assimilation(
-            analysis=written_analysis,
-            background=ds_bg,
-            run_dir=run_dir,
-            client=client
-        )
+        # assimilation_diagnostics = info_assimilation(
+        #     analysis=written_analysis,
+        #     background=ds_bg,
+        #     run_dir=run_dir,
+        #     client=client
+        # )
 
         linked_analysis = link_analysis.map(
             output_folder=output_dirs,
@@ -181,7 +184,6 @@ def get_pytassim_flow(
         shutdown_cluster(
             client=client,
             cluster=cluster,
-            upstream_tasks=[obs_diagnostics, assimilation_diagnostics,
-                            linked_analysis]
+            upstream_tasks=[linked_analysisinked_analysis]
         )
     return pytassim_flow
