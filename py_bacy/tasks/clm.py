@@ -97,13 +97,13 @@ def link_clm_initial(
 
 
 @task
-def get_clm_bg_fname(end_time: pd.Timestamp) -> str:
+def get_clm_bg_fname(curr_time: pd.Timestamp) -> str:
     """
     This task is used to construct the file name of the CLM background files.
 
     Parameters
     ----------
-    end_time : pd.Timestamp
+    curr_time : pd.Timestamp
         The name is constructed based on this timestamp.
 
     Returns
@@ -111,9 +111,9 @@ def get_clm_bg_fname(end_time: pd.Timestamp) -> str:
     bg_fname : str
         The constructed background file name.
     """
-    timediff_clm = end_time - end_time.replace(hour=0, minute=0, second=0)
+    timediff_clm = curr_time - curr_time.replace(hour=0, minute=0, second=0)
     timediff_clm_secs = timediff_clm.total_seconds()
     clm_file_name = 'clmoas.clm2.r.{0:s}-{1:05d}.nc'.format(
-        end_time.strftime('%Y-%m-%d'), int(timediff_clm_secs)
+        curr_time.strftime('%Y-%m-%d'), int(timediff_clm_secs)
     )
     return clm_file_name

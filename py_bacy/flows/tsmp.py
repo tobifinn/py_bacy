@@ -82,8 +82,14 @@ def get_tsmp_flow():
             model_config=unmapped(tsmp_config)
         )
         with case(restart, True):
-            clm_bg_fname = get_clm_bg_fname(model_start_time)
-            cos_bg_fname = get_cos_bg_fname(tsmp_config, model_start_time)
+            clm_bg_fname = get_clm_bg_fname(curr_time=model_start_time)
+            cos_fname_template = slice_by_key(
+                value_to_sliced=tsmp_config,
+                key_value=('COSMO', 'bg_files')
+            )
+            cos_bg_fname = get_cos_bg_fname(
+                fname_template=cos_fname_template, curr_time=model_start_time
+            )
             linked_clm_restart = link_clm_restart.map(
                 parent_model_output=parent_dirs,
                 output_fname=unmapped(clm_bg_fname),

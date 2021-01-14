@@ -12,7 +12,7 @@
 
 # System modules
 import logging
-from typing import List, Tuple
+from typing import List, Tuple, Any
 
 # External modules
 from prefect import task
@@ -21,8 +21,10 @@ from prefect import task
 
 
 __all__ = [
-    'unzip_mapped_result'
+    'unzip_mapped_result',
+    'slice_by_key'
 ]
+
 
 @task
 def unzip_mapped_result(
@@ -30,3 +32,14 @@ def unzip_mapped_result(
 ) -> Tuple[List]:
     unzipped_result = tuple(zip(*mapped_result))
     return unzipped_result
+
+
+@task
+def slice_by_key(
+        value_to_sliced: Any,
+        key_tuple: Tuple[str]
+) -> Any:
+    sliced_value = value_to_sliced
+    for level in key_tuple:
+        sliced_value = sliced_value[level]
+    return sliced_value

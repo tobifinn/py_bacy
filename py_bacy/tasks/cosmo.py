@@ -14,6 +14,7 @@
 from typing import Dict, Any
 import os.path
 import glob
+import datetime
 
 # External modules
 import prefect
@@ -105,18 +106,18 @@ def link_cos_initial(
 
 @task
 def get_cos_bg_fname(
-        model_config: Dict[str, Any],
-        end_time: pd.Timestamp
+        fname_template: str,
+        curr_time: pd.Timestamp
 ) -> str:
     """
     This task is used to construct the file name of the COSMO background files.
 
     Parameters
     ----------
-    model_config : Dict[str, Any]
+    fname_template : str
         This model configuration dictionary specifies the background file name
         under [COSMO][bg_files].
-    end_time : pd.Timestamp
+    curr_time : pd.Timestamp
         The time of this timestamp is inserted into the bg_files regex.
 
     Returns
@@ -124,5 +125,46 @@ def get_cos_bg_fname(
     bg_fname : str
         The constructed background file name.
     """
-    bg_fname = end_time.strftime(model_config['COSMO']['bg_files'])
+    bg_fname = curr_time.strftime(fname_template)
     return bg_fname
+
+
+@task
+def link_background(
+    parent_model_output: str,
+    input_folder: str,
+    config: Dict[str, Any],
+    cycle_config: Dict[str, Any],
+    analysis_time: datetime.datetime
+) -> str:
+    pass
+
+
+@task
+def link_first_guess():
+    pass
+
+
+@task
+def load_background():
+    pass
+
+
+@task
+def load_first_guess():
+    pass
+
+
+@task
+def post_process_analysis():
+    pass
+
+
+@task
+def write_analysis():
+    pass
+
+
+@task
+def link_analysis():
+    pass
