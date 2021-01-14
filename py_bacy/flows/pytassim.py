@@ -16,6 +16,7 @@ import logging
 # External modules
 from prefect import Flow, Parameter, unmapped, case, Task
 from prefect.tasks.control_flow import merge
+from prefect.tasks.core.function import FunctionTask
 
 # Internal modules
 from py_bacy.tasks.dask import *
@@ -173,17 +174,25 @@ def get_pytassim_flow(
         #     client=client
         # )
 
+        analysis_dir = construct_rundir(
+            name='analysis',
+            time=analysis_time,
+            cycle_config=cycle_config
+        )
+        path_join = FunctionTask(
+            lambda prefix, suffix: os.path.join(prefix, suffix)
+        )
+        analysis_dirs = path_join.map(analysis_dir, ens_suffix)
+        analysis_dirs = create_folders.map(dir_path=analysis_dirs)
         linked_analysis = link_analysis.map(
             output_folder=output_dirs,
-            config=unmapped(pytassim_config),
-            cycle_config=unmapped(cycle_config),
-            analysis_time=unmapped(analysis_time),
+            analysis_folder=analysis_dirs,
             upstream_tasks=[unmapped(written_analysis)]
         )
 
         shutdown_cluster(
             client=client,
             cluster=cluster,
-            upstream_tasks=[linked_analysisinked_analysis]
+            upstream_tasks=[linked_analysis]
         )
     return pytassim_flow
