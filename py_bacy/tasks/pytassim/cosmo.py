@@ -57,25 +57,6 @@ def link_background(
 
 
 @task
-def link_first_guess(
-        parent_model_output: str,
-        input_folder: str,
-        config: Dict[str, Any],
-        cycle_config: Dict[str, Any],
-        analysis_time: datetime.datetime
-) -> List[str]:
-    fg_file_path = os.path.join(parent_model_output, config['obs']['fg_files'])
-    fg_files = glob.glob(fg_file_path)
-    linked_files = []
-    for fpath in fg_files:
-        fg_fname = os.path.basename(fpath)
-        tmp_fg_path = os.path.join(input_folder, fg_fname)
-        target_file = symlink.run(fpath, tmp_fg_path)
-        linked_files.append(target_file)
-    return linked_files
-
-
-@task
 def load_background(
         bg_files: List[str],
         analysis_time: datetime.datetime,
