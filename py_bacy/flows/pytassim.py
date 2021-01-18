@@ -22,8 +22,8 @@ from prefect.tasks.core.function import FunctionTask
 from py_bacy.tasks.dask import *
 from py_bacy.tasks.general import *
 from py_bacy.tasks.system import *
-from py_bacy.tasks.pytassim import *
 from py_bacy.tasks.utils import *
+from py_bacy.tasks.pytassim.utils import *
 
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,7 @@ def get_pytassim_flow(
             cycle_config=cycle_config
         )
 
-        ds_bg = load_background(
+        model_dataset, background = load_background(
             bg_files=linked_bg_files,
             analysis_time=analysis_time,
             assim_config=pytassim_config,
@@ -121,7 +121,7 @@ def get_pytassim_flow(
             client=client
         )
 
-        ds_obs = load_obs(
+        observations = load_obs(
             obs_window=obs_window,
             assim_config=pytassim_config,
             cycle_config=cycle_config,
@@ -129,14 +129,19 @@ def get_pytassim_flow(
         )
 
         with case(use_fg, True):
-            ds_fg = load_first_guess(
+            first_guess = load_first_guess(
                 fg_files=linked_fg_files,
                 obs_window=obs_window,
                 assim_config=pytassim_config,
                 cycle_config=cycle_config,
                 client=client
             )
-        ds_fg = merge(ds_fg, None)
+            aligned_obs, aligned_fg = align_obs_first_guess(
+                observations=observations,
+                first_guess=first_guess
+            )
+        first_guess = merge(aligned_fg, None)
+        observations = merge(aligned_obs, observations)
 
         # obs_diagnostics = info_observations(
         #     first_guess=ds_fg,
@@ -145,21 +150,21 @@ def get_pytassim_flow(
         #     client=client
         # )
 
-        ds_ana = assimilate(
+        analysis = assimilate(
             assimilation=assimilation,
-            background=ds_bg,
-            observations=ds_obs,
-            first_guess=ds_fg,
+            background=background,
+            observations=observations,
+            first_guess=first_guess,
             analysis_time=analysis_time
         )
 
-        ds_ana = post_process_analysis(
-            analysis=ds_ana,
-            background=ds_bg
+        analysis_dataset = post_process_analysis(
+            analysis=analysis,
+            model_dataset=model_dataset
         )
 
         written_analysis = write_analysis(
-            analysis=ds_ana,
+            analysis_dataset=analysis_dataset,
             background_files=linked_bg_files,
             analysis_time=analysis_time,
             assim_config=pytassim_config,
