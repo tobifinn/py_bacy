@@ -24,7 +24,7 @@ from py_bacy.tasks.pytassim import clm, cosmo
 logger = logging.getLogger(__name__)
 
 
-def get_pytasssim_clm(
+def get_pytassim_clm(
         link_first_guess: Task,
         load_first_guess: Task,
         load_obs: Task,
@@ -44,7 +44,7 @@ def get_pytasssim_clm(
     return pytassim_clm_flow
 
 
-def get_pytasssim_cosmo(
+def get_pytassim_cosmo(
         link_first_guess: Task,
         load_first_guess: Task,
         load_obs: Task,
