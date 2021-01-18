@@ -89,9 +89,9 @@ def load_background(
 @task
 def post_process_analysis(
         analysis: xr.DataArray,
-        background: xr.DataArray
-):
-    analysis = postprocess_cosmo(analysis, background)
+        model_dataset: xr.DataArray
+) -> xr.Dataset:
+    analysis = postprocess_cosmo(analysis, model_dataset)
     analysis = constrain_var.run(analysis, 'QV', lower_bound=0)
     analysis = constrain_var.run(analysis, 'QC', lower_bound=0)
     analysis = constrain_var.run(analysis, 'QI', lower_bound=0)

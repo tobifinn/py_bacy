@@ -150,9 +150,9 @@ def load_background(
 @task
 def post_process_analysis(
         analysis: xr.DataArray,
-        background: xr.DataArray
+        model_dataset: xr.Dataset
 ) -> xr.Dataset:
-    analysis = postprocess_clm(analysis, background)
+    analysis = postprocess_clm(analysis, model_dataset)
     tot_water_bg = background['WA'] + background['H2OSOI_LIQ'].sum(
         'levtot') + background['H2OCAN'].values
     tot_water_ana = analysis['WA'] + analysis['H2OSOI_LIQ'].sum(
