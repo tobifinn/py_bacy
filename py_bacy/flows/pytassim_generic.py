@@ -166,8 +166,9 @@ def get_pytassim_flow(
         )
 
         written_analysis = write_analysis(
-            analysis_dataset=analysis_dataset,
+            analysis=analysis_dataset,
             background_files=linked_bg_files,
+            output_dirs=output_dirs,
             analysis_time=analysis_time,
             assim_config=pytassim_config,
             cycle_config=cycle_config,
@@ -194,6 +195,7 @@ def get_pytassim_flow(
         linked_analysis = link_analysis.map(
             output_folder=output_dirs,
             analysis_folder=analysis_dirs,
+            analysis_time=unmapped(analysis_time),
             upstream_tasks=[unmapped(written_analysis)]
         )
 
