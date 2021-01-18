@@ -135,6 +135,7 @@ def get_pytassim_flow(
                 obs_window=obs_window,
                 assim_config=pytassim_config,
                 cycle_config=cycle_config,
+                ens_members=ens_range,
                 client=client
             )
             aligned_obs, aligned_fg = align_obs_first_guess(
