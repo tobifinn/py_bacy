@@ -99,9 +99,9 @@ def load_obs_file(
 
 @task
 def load_stations(
-        util_dir: str
+        utils_dir: str
 ) -> pd.DataFrame:
-    file_path_station = os.path.join(util_dir, 'stations.hd5')
+    file_path_station = os.path.join(utils_dir, 'stations.hd5')
     df_stations = pd.read_hdf(file_path_station, 'stations')
     return df_stations
 
@@ -119,9 +119,9 @@ def load_coords(
 
 @task
 def load_constant_data(
-        util_dir: str
+        utils_dir: str
 ) -> xr.Dataset:
-    file_path_const = os.path.join(util_dir, 'cosmo_const.nc')
+    file_path_const = os.path.join(utils_dir, 'cosmo_const.nc')
     ds_cos_const = xr.open_dataset(file_path_const).load()
     return ds_cos_const
 
