@@ -17,6 +17,7 @@ import logging
 from prefect import Flow, Parameter, unmapped, case, Task
 from prefect.tasks.control_flow import merge
 from prefect.tasks.core.function import FunctionTask
+from prefect.tasks.core.constants import Constant
 
 # Internal modules
 from py_bacy.tasks.dask import *
@@ -142,7 +143,7 @@ def get_pytassim_flow(
                 observations=observations,
                 first_guess=first_guess
             )
-        first_guess = merge(aligned_fg, None)
+        first_guess = merge(aligned_fg, Constant(None))
         observations = merge(aligned_obs, observations)
 
         # obs_diagnostics = info_observations(
