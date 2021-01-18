@@ -36,6 +36,7 @@ __all__ = [
     'get_observation_window',
     'link_files',
     'assimilate',
+    'align_obs_first_guess',
     'info_observations',
     'info_assimilation'
 ]
@@ -151,6 +152,20 @@ def assimilate(
         analysis_time=analysis_time
     )
     return analysis
+
+
+@task
+def align_obs_first_guess(
+        observations: xr.Dataset,
+        first_guess: xr.DataArray
+) -> Tuple[xr.Dataset, xr.DataArray]:
+    time_intersection = observations.indexes['time'].intersection(
+        first_guess.indexes['time']
+    )
+    sliced_obs = observations.sel(time=time_intersection)
+    sliced_first_guess = first_guess.sel(time=time_intersection)
+    sliced_obs.obs.operator = observations.obs.operator
+    return sliced_obs, sliced_first_guess
 
 
 @task
