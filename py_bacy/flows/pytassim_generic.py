@@ -185,12 +185,13 @@ def get_pytassim_flow(
         analysis_dir = construct_rundir(
             name='analysis',
             time=analysis_time,
-            cycle_config=cycle_config
+            cycle_config=cycle_config,
+            upstream_tasks = [written_analysis]
         )
         path_join = FunctionTask(
             lambda prefix, suffix: os.path.join(prefix, suffix)
         )
-        analysis_dirs = path_join.map(analysis_dir, ens_suffix)
+        analysis_dirs = path_join.map(unmapped(analysis_dir), ens_suffix)
         analysis_dirs = create_folders.map(dir_path=analysis_dirs)
         linked_analysis = link_analysis.map(
             output_folder=output_dirs,
