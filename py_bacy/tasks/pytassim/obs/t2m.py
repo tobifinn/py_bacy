@@ -70,9 +70,8 @@ def load_first_guess(
         ens_members: List[int],
         client: Client,
 ) -> xr.DataArray:
-    ds_first_guess = load_ens_data(
-        file_path=fg_files,
-        client=client
+    ds_first_guess = load_ens_data.run(
+        file_paths=fg_files
     )
     ds_first_guess['ensemble'] = ens_members
     ds_first_guess = ds_first_guess.sel(
