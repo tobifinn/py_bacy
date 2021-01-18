@@ -21,6 +21,7 @@ import prefect
 from prefect import task
 
 import xarray as xr
+import numpy as np
 from distributed import Client
 
 from pytassim.model.terrsysmp.cosmo import preprocess_cosmo, postprocess_cosmo
@@ -31,6 +32,9 @@ from py_bacy.tasks.io import load_ens_data, write_ens_data
 from py_bacy.tasks.system import symlink
 from py_bacy.tasks.xarray import constrain_var
 
+
+EARTH_RADIUS = 6371000
+DEG_TO_M = 2 * np.pi / 360 * EARTH_RADIUS
 
 ANA_FNAME = 'laf%Y%m%d%H%M%S.nc'
 
