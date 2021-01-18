@@ -118,6 +118,7 @@ def get_pytassim_flow(
             analysis_time=analysis_time,
             assim_config=pytassim_config,
             cycle_config=cycle_config,
+            ens_members=ens_range,
             client=client
         )
 
