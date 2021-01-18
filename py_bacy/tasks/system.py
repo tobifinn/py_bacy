@@ -93,6 +93,8 @@ def create_folders(dir_path: str) -> str:
         An OSError is raised if after creation the directory path is not
         available.
     """
+    logger = prefect.context.get('logger')
+    logger.debug('Create {0:s} as directory'.format(dir_path))
     if not os.path.isdir(dir_path):
         os.makedirs(dir_path)
     if not os.path.isdir(dir_path):
