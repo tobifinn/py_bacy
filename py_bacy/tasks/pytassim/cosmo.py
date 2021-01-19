@@ -43,7 +43,8 @@ __all__ = [
     'link_background',
     'load_background',
     'post_process_analysis',
-    'write_analysis'
+    'write_analysis',
+    'link_output'
 ]
 
 
@@ -130,3 +131,20 @@ def write_analysis(
         client=client
     )
     return analysis_files, loaded_analysis
+
+
+@task
+def link_output(
+        background_file: str,
+        output_dir: str,
+        analysis_time: pd.Timestamp
+) -> str:
+    if not os.path.isfile(background_file):
+        raise OSError('{0:s} does not exist!'.format(background_file))
+
+    output_fname = analysis_time.strftime(ANA_FNAME)
+    output_file = os.path.join(output_dir, output_fname)
+    output_file = symlink.run(
+        source=background_file, target=output_file
+    )
+    return output_file
