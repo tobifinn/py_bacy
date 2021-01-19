@@ -79,7 +79,7 @@ def load_background(
         client: Client,
 ) -> Tuple[xr.Dataset, xr.DataArray]:
     ds_cosmo = load_ens_data.run(
-        file_path=bg_files,
+        file_paths=bg_files,
     )
     ds_cosmo['ensemble'] = ens_members
     background = preprocess_cosmo(ds_cosmo, assim_config['assim_vars'])
@@ -89,7 +89,7 @@ def load_background(
 @task
 def post_process_analysis(
         analysis: xr.DataArray,
-        model_dataset: xr.DataArray
+        model_dataset: xr.Dataset
 ) -> xr.Dataset:
     analysis = postprocess_cosmo(analysis, model_dataset)
     analysis = constrain_var.run(analysis, 'QV', lower_bound=0)
@@ -124,10 +124,10 @@ def write_analysis(
         os.path.join(output_dir, analysis_fname) for output_dir in output_dirs
     ]
     _ = write_ens_data.run(
-        loaded_analysis,
-        background_files,
-        analysis_files,
-        assim_config['assim_vars'],
+        dataset_to_write=loaded_analysis,
+        source_paths=background_files,
+        target_paths=analysis_files,
+        assim_vars=assim_config['assim_vars'],
         client=client
     )
     return loaded_analysis
