@@ -48,6 +48,23 @@ __all__ = [
 ]
 
 
+def distance_func(x, y):
+    diff_obs_cos_deg = y[:, :-1] - x[:-1]
+    diff_obs_cos_m = diff_obs_cos_deg * DEG_TO_M
+    dist_obs_cos_2d = np.sqrt(np.sum(diff_obs_cos_m**2, axis=-1))
+
+    cos_press = press_int(x[-1])
+    obs_press = press_int(y[:, -1])
+    obs_lnp = np.log(obs_press)
+    cos_lnp = np.log(cos_press)
+    dist_obs_cos_vert = np.abs(cos_lnp - obs_lnp)
+    return dist_obs_cos_2d, dist_obs_cos_vert
+
+
+def press_int(level_height):
+    return 1013.25 * np.power(1 - (0.0065 * level_height / 288.15), 5.255)
+
+
 @task
 def link_background(
     parent_model_output: str,
