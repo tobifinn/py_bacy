@@ -21,7 +21,7 @@ cos_bg_step=$(($s_ana/$cos_dt+$cos_nstart))
 cos_hinc=$(($h_int+h_start))
 
 cos_out_start=`echo $h_start+1 | bc`
-cos_fg_start=`echo $h_start+0.25 | bc`
+cos_fg_start=`echo $h_start+1 | bc`
 cos_out_end=`echo $cos_hinc+1 | bc`
 
 clm_dt=%CLM_DT%
@@ -187,7 +187,7 @@ cat > INPUT_IO  << end_input_io
            'TKE       '
  /
  &GRIBOUT
-    hcomb=${cos_fg_start},${cos_out_end},1.,
+    hcomb=${cos_fg_start},${cos_out_end},1,
     lanalysis=.false.,
     lcheck=.false.,
     yform_write='ncdf',
