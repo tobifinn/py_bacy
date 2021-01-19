@@ -44,7 +44,6 @@ DENSITY = 1000
 
 __all__ = [
     'link_background',
-    'link_analysis',
     'load_background',
     'post_process_analysis',
     'write_analysis'

@@ -41,7 +41,6 @@ ANA_FNAME = 'laf%Y%m%d%H%M%S.nc'
 
 __all__ = [
     'link_background',
-    'link_analysis',
     'load_background',
     'post_process_analysis',
     'write_analysis'

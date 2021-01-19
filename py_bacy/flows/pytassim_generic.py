@@ -192,8 +192,6 @@ def get_pytassim_flow(
         linked_analysis = link_analysis.map(
             output_file=output_files,
             analysis_folder=analysis_dirs,
-            analysis_time=unmapped(analysis_time),
-            upstream_tasks=[unmapped(written_analysis)]
         )
 
         shutdown_cluster(
