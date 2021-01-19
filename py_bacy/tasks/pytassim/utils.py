@@ -17,7 +17,8 @@ import os.path
 import glob
 
 # External modules
-from prefect import task, context
+import prefect
+from prefect import task
 
 import xarray as xr
 import pandas as pd
@@ -69,6 +70,7 @@ def get_observation_window(
     -------
     obs_times : Tuple[pd.Timestamp, pd.Timestamp]
     """
+    logger = prefect.context.get('logger')
     lead_timedelta = pd.to_timedelta(
         cycle_config['TIME']['cycle_lead_time'], unit='S'
     )
@@ -83,7 +85,7 @@ def get_observation_window(
             lead_timedelta
         ]
     if obs_timedelta[1] > lead_timedelta:
-        context.logger.warning(
+        logger.warning(
             'The observation time delta is larger than the lead time delta,'
             'I will restrict the observation time delta to the lead time '
             'delta!'
@@ -166,22 +168,3 @@ def align_obs_first_guess(
     sliced_first_guess = first_guess.sel(time=time_intersection)
     sliced_obs.obs.operator = observations.obs.operator
     return sliced_obs, sliced_first_guess
-
-
-@task
-def info_observations(
-        first_guess: xr.DataArray,
-        observations: xr.Dataset,
-        run_dir: str,
-        client: Union[Client, None]
-) -> str:
-    pass
-
-
-@task
-def info_assimilation(
-        analysis: xr.DataArray,
-        background: xr.DataArray,
-        run_dir: str,
-) -> str:
-    pass
