@@ -39,6 +39,7 @@ __all__ = [
 def get_tsmp_flow():
     with Flow('tsmp_run') as tsmp_run:
         start_time = Parameter('start_time')
+        analysis_time = Parameter('analysis_time')
         end_time = Parameter('end_time')
         config_path = Parameter('config_path')
         cycle_config = Parameter('cycle_config')
@@ -164,6 +165,7 @@ def get_tsmp_restart_flow():
     tsmp_flow = get_tsmp_flow()
     with Flow('tsmp_restart_run') as restart_run:
         start_time = Parameter('start_time')
+        analysis_time = Parameter('analysis_time')
         end_time = Parameter('end_time')
         config_path = Parameter('config_path')
         cycle_config = Parameter('cycle_config')
