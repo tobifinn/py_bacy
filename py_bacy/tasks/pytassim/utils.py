@@ -38,8 +38,6 @@ __all__ = [
     'link_files',
     'assimilate',
     'align_obs_first_guess',
-    'info_observations',
-    'info_assimilation'
 ]
 
 
