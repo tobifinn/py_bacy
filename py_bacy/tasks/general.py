@@ -62,23 +62,38 @@ class PyBacyFlowTask(Task):
             analysis_time: pd.Timestamp,
             end_time: pd.Timestamp,
             cycle_config: Dict[str, Any]
-    ) -> State:
-        self.logger.info(
-            'Starting {0:s} with start_time: {1}, analysis_time: {2}, '
-            'and end_time: {3}'.format(
-                self.name, start_time, analysis_time, end_time
-            )
-        )
-        flow_state = self.flow.run(
-            start_time=start_time,
-            analysis_time=analysis_time,
-            end_time=end_time,
-            cycle_config=cycle_config,
+    ) -> Union[State, None]:
+        run_dir = construct_rundir(
             name=self.name,
-            config_path=self.config_path,
-            parent_model_name=self.parent_model_name,
-            **self.flow_kwargs
+            time=start_time,
+            cycle_config=cycle_config
         )
+        if os.path.isdir(run_dir):
+            self.logger.info(
+                'Flow {0:s} already run for start_time: {1}, I\'ll skip the '
+                'run!'.format(
+                    self.name,
+                    start_time
+                )
+            )
+            flow_state = None
+        else:
+            self.logger.info(
+                'Starting {0:s} with start_time: {1}, analysis_time: {2}, '
+                'and end_time: {3}'.format(
+                    self.name, start_time, analysis_time, end_time
+                )
+            )
+            flow_state = self.flow.run(
+                start_time=start_time,
+                analysis_time=analysis_time,
+                end_time=end_time,
+                cycle_config=cycle_config,
+                name=self.name,
+                config_path=self.config_path,
+                parent_model_name=self.parent_model_name,
+                **self.flow_kwargs
+            )
         return flow_state
 
 
