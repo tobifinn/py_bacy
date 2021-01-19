@@ -116,7 +116,7 @@ def write_analysis(
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         client: Client,
-) -> xr.Dataset:
+) -> Tuple[List[str], xr.Dataset]:
     loaded_analysis = analysis.compute(client=client)
 
     analysis_fname = analysis_time.strftime(ANA_FNAME)
@@ -130,7 +130,7 @@ def write_analysis(
         assim_vars=assim_config['assim_vars'],
         client=client
     )
-    return loaded_analysis
+    return analysis_files, loaded_analysis
 
 
 @task
