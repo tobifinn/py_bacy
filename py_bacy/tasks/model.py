@@ -209,7 +209,6 @@ def get_model_time_range(
     last_steps = pd.date_range(model_steps[-1], end_time,
                                freq=restart_td[-1])
     model_steps = model_steps + list(last_steps[1:])
-    model_steps = [step.to_pydatetime() for step in model_steps]
     return model_steps
 
 
