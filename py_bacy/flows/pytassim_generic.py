@@ -80,7 +80,7 @@ def get_pytassim_flow(
         with case(cluster_mode, 'local'):
             local_client, local_cluster = initialize_local_cluster(cycle_config)
         with case(cluster_mode, None):
-            no_client, no_cluster = None, None
+            no_client = no_cluster = Constant(None)
         client = merge(slurm_client, local_client, no_client)
         cluster = merge(slurm_cluster, local_cluster, no_cluster)
 
@@ -127,9 +127,9 @@ def get_pytassim_flow(
             linked_fg_files = link_first_guess.map(
                 parent_model_output=parent_dirs,
                 input_folder=input_dirs,
-                config=pytassim_config,
-                cycle_config=cycle_config,
-                analysis_time=analysis_time
+                config=unmapped(pytassim_config),
+                cycle_config=unmapped(cycle_config),
+                analysis_time=unmapped(analysis_time)
             )
             first_guess = load_first_guess(
                 fg_files=linked_fg_files,
