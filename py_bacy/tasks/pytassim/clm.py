@@ -152,8 +152,8 @@ def post_process_analysis(
         model_dataset: xr.Dataset
 ) -> xr.Dataset:
     analysis = postprocess_clm(analysis, model_dataset)
-    tot_water_bg = background['WA'] + background['H2OSOI_LIQ'].sum(
-        'levtot') + background['H2OCAN'].values
+    tot_water_bg = model_dataset['WA'] + model_dataset['H2OSOI_LIQ'].sum(
+        'levtot') + model_dataset['H2OCAN'].values
     tot_water_ana = analysis['WA'] + analysis['H2OSOI_LIQ'].sum(
         'levtot') + analysis['H2OCAN'].values
     delta_water = tot_water_ana - tot_water_bg
