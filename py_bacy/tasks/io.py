@@ -180,7 +180,7 @@ def write_ens_data(
         dataset_scattered = client.scatter(
             dataset_to_write.isel(ensemble=member_num)
         )
-        tmp_delayed = dask.delayed(write_single_ens_mem)(
+        tmp_delayed = dask.delayed(write_single_ens_mem.run)(
             source_path, target_paths[member_num], dataset_scattered, assim_vars
         )
         ens_delayed_list.append(tmp_delayed)
