@@ -50,8 +50,12 @@ def link_first_guess(
         cycle_config: Dict[str, Any],
         analysis_time: datetime.datetime
 ) -> List[str]:
+    logger = prefect.context.get('logger')
     fg_file_path = os.path.join(parent_model_output, config['obs']['fg_files'])
-    fg_files = glob.glob(fg_file_path)
+    logger.debug('First guess search path: {0:s}'.format(fg_file_path))
+    fg_files = list(glob.glob(fg_file_path))
+    logger.debug('Found first guess files: {0}'.format(fg_files))
+
     linked_files = []
     for fpath in fg_files:
         fg_fname = os.path.basename(fpath)
