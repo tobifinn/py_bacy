@@ -38,6 +38,7 @@ __all__ = [
     'link_files',
     'assimilate',
     'align_obs_first_guess',
+    'link_analysis'
 ]
 
 
@@ -166,3 +167,16 @@ def align_obs_first_guess(
     sliced_first_guess = first_guess.sel(time=time_intersection)
     sliced_obs.obs.operator = observations.obs.operator
     return sliced_obs, sliced_first_guess
+
+
+@task
+def link_analysis(
+        output_file: str,
+        analysis_folder: str
+):
+    fname_analysis = os.path.basename(output_file)
+    if not os.path.isfile(output_file):
+        raise OSError('{0:s} does not exist!'.format(output_file))
+    analysis_file = os.path.join(analysis_folder, fname_analysis)
+    analysis_file = symlink.run(source=output_file, target=analysis_file)
+    return analysis_file

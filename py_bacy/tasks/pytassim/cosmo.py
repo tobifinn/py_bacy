@@ -131,18 +131,3 @@ def write_analysis(
         client=client
     )
     return analysis_files, loaded_analysis
-
-
-@task
-def link_analysis(
-        output_folder: str,
-        analysis_folder: str,
-        analysis_time: pd.Timestamp,
-):
-    fname_analysis = analysis_time.strftime(ANA_FNAME)
-    output_file = os.path.join(output_folder, fname_analysis)
-    if not os.path.isfile(output_file):
-        raise OSError('{0:s} does not exist!'.format(output_file))
-    analysis_file = os.path.join(analysis_folder, fname_analysis)
-    analysis_file = symlink.run(source=output_file, target=analysis_file)
-    return analysis_file
