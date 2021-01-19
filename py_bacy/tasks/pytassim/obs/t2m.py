@@ -52,7 +52,7 @@ def link_first_guess(
     logger = prefect.context.get('logger')
     fg_file_path = os.path.join(parent_model_output, config['obs']['fg_files'])
     logger.debug('First guess search path: {0:s}'.format(fg_file_path))
-    fg_files = list(glob.glob(fg_file_path))
+    fg_files = list(sorted(glob.glob(fg_file_path)))
     logger.debug('Found first guess files: {0}'.format(fg_files))
 
     linked_files = []
