@@ -139,12 +139,7 @@ def get_pytassim_flow(
                 ens_members=ens_range,
                 client=client
             )
-            aligned_obs, aligned_fg = align_obs_first_guess(
-                observations=observations,
-                first_guess=first_guess
-            )
-        first_guess = merge(aligned_fg, Constant(None))
-        observations = merge(aligned_obs, observations)
+        first_guess = merge(first_guess, Constant(None))
 
         # obs_diagnostics = info_observations(
         #     first_guess=ds_fg,
