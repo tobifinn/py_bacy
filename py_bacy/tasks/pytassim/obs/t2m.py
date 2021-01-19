@@ -70,14 +70,31 @@ def load_first_guess(
         ens_members: List[int],
         client: Client,
 ) -> xr.DataArray:
+    logger = prefect.context.get('logger')
+    logger.debug(
+        'Starting to load first guess dataset with paths: {0}'.format(
+            fg_files
+        )
+    )
     ds_first_guess = load_ens_data.run(
         file_paths=fg_files
     )
+    logger.debug('Loaded first guess dataset {0}'.format(ds_first_guess))
     ds_first_guess['ensemble'] = ens_members
     ds_first_guess = ds_first_guess.sel(
         time=slice(obs_window[0], obs_window[1])
     )
+    logger.debug(
+        'Sliced first guess to observation window: {0}'.format(
+            ds_first_guess
+        )
+    )
     ds_first_guess = preprocess_cosmo(ds_first_guess, ['T', 'T_2M']).load()
+    logger.debug(
+        'Preprocessed first guess: {0}'.format(
+            ds_first_guess
+        )
+    )
     return ds_first_guess
 
 
