@@ -24,6 +24,7 @@ import yaml
 import pandas as pd
 
 # Internal modules
+from .system import create_folders
 
 
 __all__ = [
@@ -197,3 +198,19 @@ def check_output_files(
             raise OSError('No available files under regex {0:s} '
                           'found!'.format(curr_path))
     return output_folder
+
+
+@task
+def create_analysis_dir(
+        cycle_config: Dict[str, Any],
+        analysis_time: pd.Timestamp,
+        ens_suffix: str
+) -> str:
+    analysis_dir = construct_rundir(
+        name='analysis',
+        time=analysis_time,
+        cycle_config=cycle_config,
+    )
+    analysis_dir = os.path.join(analysis_dir, ens_suffix)
+    analysis_dir = create_folders.run(dir_path=analysis_dir)
+    return analysis_dir
