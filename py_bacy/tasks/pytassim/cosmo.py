@@ -58,7 +58,7 @@ def link_background(
 ) -> str:
     logger = prefect.context.get('logger')
     bg_fname = get_cos_bg_fname.run(
-        fname_template=config['bg_files'], analysis_time=analysis_time
+        fname_template=config['bg_files'], curr_time=analysis_time
     )
     source_path = os.path.join(parent_model_output, bg_fname)
     source_files_found = list(sorted(glob.glob(source_path)))
