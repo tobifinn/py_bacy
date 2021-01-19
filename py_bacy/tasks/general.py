@@ -32,7 +32,8 @@ __all__ = [
     'get_parent_output',
     'construct_rundir',
     'construct_ensemble',
-    'check_output_files'
+    'check_output_files',
+    'create_analysis_dir'
 ]
 
 
