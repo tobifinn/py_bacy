@@ -83,7 +83,6 @@ def load_ens_data(
     return ds_ens
 
 
-@task
 def write_single_ens_mem(
         source_path: str,
         target_path: str,
@@ -115,16 +114,10 @@ def write_single_ens_mem(
     target_path : str
         The target path with the written data.
     """
-    logger = prefect.context.get('logger')
     copyfile(source_path, target_path)
     with nc4.Dataset(target_path, mode='r+') as loaded_ds:
         for var_name in assim_vars:
             loaded_ds[var_name][:] = analysis_dataset[var_name]
-            logger.debug(
-                'Overwritten {0:s} in {1:s} with new data'.format(
-                    var_name, target_path
-                )
-            )
     return target_path
 
 
@@ -180,7 +173,7 @@ def write_ens_data(
         dataset_scattered = client.scatter(
             dataset_to_write.isel(ensemble=member_num)
         )
-        tmp_delayed = dask.delayed(write_single_ens_mem.run)(
+        tmp_delayed = dask.delayed(write_single_ens_mem)(
             source_path, target_paths[member_num], dataset_scattered, assim_vars
         )
         ens_delayed_list.append(tmp_delayed)
