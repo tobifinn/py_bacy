@@ -100,13 +100,6 @@ def get_pytassim_flow(
             cycle_config=unmapped(cycle_config),
             analysis_time=unmapped(analysis_time)
         )
-        linked_fg_files = link_first_guess.map(
-            parent_model_output=parent_dirs,
-            input_folder=input_dirs,
-            config=pytassim_config,
-            cycle_config=cycle_config,
-            analysis_time=analysis_time
-        )
 
         obs_window = get_observation_window(
             start_time=start_time,
@@ -131,6 +124,13 @@ def get_pytassim_flow(
         )
 
         with case(use_fg, True):
+            linked_fg_files = link_first_guess.map(
+                parent_model_output=parent_dirs,
+                input_folder=input_dirs,
+                config=pytassim_config,
+                cycle_config=cycle_config,
+                analysis_time=analysis_time
+            )
             first_guess = load_first_guess(
                 fg_files=linked_fg_files,
                 obs_window=obs_window,
