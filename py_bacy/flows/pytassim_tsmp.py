@@ -18,6 +18,7 @@ from prefect import Flow, Task
 
 # Internal modules
 from .pytassim_generic import get_pytassim_flow
+from .symbolic import get_symbolic_flow
 from py_bacy.tasks.pytassim import clm, cosmo
 
 
@@ -60,3 +61,19 @@ def get_pytassim_cosmo(
         write_analysis=cosmo.write_analysis,
     )
     return pytassim_cos_flow
+
+
+def get_symbolic_clm() -> Flow:
+    symbolic_flow = get_symbolic_flow(
+        link_background=clm.link_background,
+        link_output=clm.link_output
+    )
+    return symbolic_flow
+
+
+def get_symbolic_cosmo() -> Flow:
+    symbolic_flow = get_symbolic_flow(
+        link_background=cosmo.link_background,
+        link_output=cosmo.link_output
+    )
+    return symbolic_flow
