@@ -17,7 +17,8 @@ import glob
 
 # External modules
 import prefect
-from prefect import task
+from prefect import task, Task, Flow
+from prefect.engine.state import State
 
 import yaml
 
@@ -28,6 +29,7 @@ from .system import create_folders
 
 
 __all__ = [
+    'PyBacyFlowTask',
     'config_reader',
     'get_parent_output',
     'construct_rundir',
@@ -35,6 +37,49 @@ __all__ = [
     'check_output_files',
     'create_analysis_dir'
 ]
+
+
+class PyBacyFlowTask(Task):
+    def __init__(
+            self,
+            flow: Flow,
+            name: str,
+            config_path: Union[str, None] = None,
+            parent_model_name: Union[str, None] = None,
+            flow_kwargs: Union[Dict[str, Any], None] = None,
+            **task_kwargs
+    ):
+        super().__init__(**task_kwargs)
+        self.flow = flow
+        self.name = name
+        self.config_path = config_path
+        self.parent_model_name = parent_model_name
+        self.flow_kwargs = flow_kwargs
+
+    def run(
+            self,
+            start_time: pd.Timestamp,
+            analysis_time: pd.Timestamp,
+            end_time: pd.Timestamp,
+            cycle_config: Dict[str, Any]
+    ) -> State:
+        self.logger.info(
+            'Starting {0:s} with start_time: {1}, analysis_time: {2}, '
+            'and end_time: {3}'.format(
+                self.name, start_time, analysis_time, end_time
+            )
+        )
+        flow_state = self.flow.run(
+            start_time=start_time,
+            analysis_time=analysis_time,
+            end_time=end_time,
+            cycle_config=cycle_config,
+            name=self.name,
+            config_path=self.config_path,
+            parent_model_name=self.parent_model_name,
+            **self.flow_kwargs
+        )
+        return flow_state
 
 
 @task
