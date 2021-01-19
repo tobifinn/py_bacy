@@ -39,7 +39,6 @@ def get_pytassim_flow(
         initialize_assimilation: Task,
         post_process_analysis: Task,
         write_analysis: Task,
-        link_analysis: Task,
 ):
     with Flow('pytassim') as pytassim_flow:
         start_time = Parameter('start_time')

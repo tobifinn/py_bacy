@@ -39,7 +39,6 @@ def get_pytassim_clm(
         initialize_assimilation=initialize_assimilation,
         post_process_analysis=clm.post_process_analysis,
         write_analysis=clm.write_analysis,
-        link_analysis=clm.link_analysis
     )
     return pytassim_clm_flow
 
@@ -59,6 +58,5 @@ def get_pytassim_cosmo(
         initialize_assimilation=initialize_assimilation,
         post_process_analysis=cosmo.post_process_analysis,
         write_analysis=cosmo.write_analysis,
-        link_analysis=cosmo.link_analysis
     )
     return pytassim_cos_flow
