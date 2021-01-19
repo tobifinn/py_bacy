@@ -173,7 +173,6 @@ def write_analysis(
         cycle_config: Dict[str, Any],
         client: Client,
 ) -> xr.Dataset:
-    analysis = analysis.sel(time=[analysis_time])
     loaded_analysis = analysis.compute(client=client)
 
     analysis_fname = analysis_time.strftime(ANA_FNAME)
