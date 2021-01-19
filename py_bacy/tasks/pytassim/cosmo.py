@@ -12,7 +12,6 @@
 
 # System modules
 from typing import Dict, Any, List, Tuple
-import datetime
 import os.path
 import glob
 
@@ -23,6 +22,7 @@ from prefect import task
 import xarray as xr
 import numpy as np
 from distributed import Client
+import pandas as pd
 
 from pytassim.model.terrsysmp.cosmo import preprocess_cosmo, postprocess_cosmo
 
@@ -54,7 +54,7 @@ def link_background(
     input_folder: str,
     config: Dict[str, Any],
     cycle_config: Dict[str, Any],
-    analysis_time: datetime.datetime
+    analysis_time: pd.Timestamp
 ) -> str:
     logger = prefect.context.get('logger')
     bg_fname = get_cos_bg_fname.run(
@@ -72,7 +72,7 @@ def link_background(
 @task
 def load_background(
         bg_files: List[str],
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         ens_members: List[int],
@@ -112,7 +112,7 @@ def write_analysis(
         analysis: xr.Dataset,
         background_files: List[str],
         output_dirs: List[str],
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         client: Client,
@@ -138,7 +138,7 @@ def write_analysis(
 def link_analysis(
         output_folder: str,
         analysis_folder: str,
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
 ):
     fname_analysis = analysis_time.strftime(ANA_FNAME)
     output_file = os.path.join(output_folder, fname_analysis)

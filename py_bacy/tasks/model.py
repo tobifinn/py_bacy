@@ -14,12 +14,12 @@
 import os.path
 from typing import Dict, Any, Union, List
 import subprocess
-import datetime
 
 # External modules
 import prefect
 from prefect import task, Flow
 from prefect.engine.signals import LOOP
+
 import pandas as pd
 
 # Internal modules
@@ -190,10 +190,10 @@ def get_pids(run_dir: str) -> List[str]:
 
 @task
 def get_model_time_range(
-        start_time: datetime.datetime,
-        end_time: datetime.datetime,
+        start_time: pd.Timestamp,
+        end_time: pd.Timestamp,
         model_config: Dict[str, Any]
-) -> List[datetime.datetime]:
+) -> List[pd.Timestamp]:
     logger = prefect.context.get('logger')
     restart_td = model_config['restart_td']
     model_steps = [pd.to_datetime(start_time), ]
@@ -217,7 +217,7 @@ def get_model_time_range(
 def loop_model_runs(
         model_flow: Flow,
         name: str,
-        model_steps: List[datetime.datetime],
+        model_steps: List[pd.Timestamp],
         parent_model_name: Union[str, None] = None,
         **kwargs
 ) -> str:

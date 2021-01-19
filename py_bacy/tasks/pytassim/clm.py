@@ -12,7 +12,6 @@
 
 # System modules
 from typing import Dict, Any, List, Tuple
-import datetime
 import os.path
 import glob
 
@@ -68,7 +67,7 @@ def link_background(
     input_folder: str,
     config: Dict[str, Any],
     cycle_config: Dict[str, Any],
-    analysis_time: datetime.datetime
+    analysis_time: pd.Timestamp
 ) -> str:
     logger = prefect.context.get('logger')
     bg_fname = get_clm_bg_fname.run(
@@ -112,7 +111,7 @@ def load_clm_grid(
 def restart_files_to_background(
         ds_clm: xr.Dataset,
         assim_vars: List[str],
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
         grid_index: pd.MultiIndex
 ) -> xr.DataArray:
     background = preprocess_clm(ds_clm, assim_vars)
@@ -125,7 +124,7 @@ def restart_files_to_background(
 @task
 def load_background(
         bg_files: List[str],
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         ens_members: List[int],
@@ -169,7 +168,7 @@ def write_analysis(
         analysis: xr.Dataset,
         background_files: List[str],
         output_dirs: List[str],
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         client: Client,
@@ -195,7 +194,7 @@ def write_analysis(
 def link_analysis(
         output_folder: str,
         analysis_folder: str,
-        analysis_time: datetime.datetime,
+        analysis_time: pd.Timestamp,
 ):
     fname_analysis = analysis_time.strftime(ANA_FNAME)
     output_file = os.path.join(output_folder, fname_analysis)

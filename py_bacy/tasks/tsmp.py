@@ -12,10 +12,11 @@
 
 # System modules
 from typing import Dict, Any
-import datetime
 
 # External modules
 from prefect import task
+
+import pandas as pd
 
 # Internal modules
 
@@ -28,8 +29,8 @@ __all__ = [
 @task
 def create_tsmp_placeholders(
         name: str,
-        model_start_time: datetime.datetime,
-        end_time: datetime.datetime,
+        model_start_time: pd.Timestamp,
+        end_time: pd.Timestamp,
         run_dir: str,
         tsmp_config: Dict[str, Any],
         cycle_config: Dict[str, Any]
@@ -42,9 +43,9 @@ def create_tsmp_placeholders(
     ----------
     name : str
         The name of the model run.
-    model_start_time : datetime.datetime
+    model_start_time : pd.Timestamp
         The start time of the model run.
-    end_time : datetime.datetime
+    end_time : pd.Timestamp
         The end time of the model run.
     run_dir : str
         The run directory, where the model will write its input and output.
@@ -59,7 +60,7 @@ def create_tsmp_placeholders(
         This is the dictionary with the placeholders for the TerrSysMP namelist.
         The placeholders have all the form `%PLACEHOLDER_NAME%`.
     """
-    ini_time = datetime.datetime.strptime(
+    ini_time = pd.Timestamp.strptime(
         cycle_config['TIME']['start_time'],
         cycle_config['TIME']['time_format'],
     )

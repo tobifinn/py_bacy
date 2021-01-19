@@ -12,7 +12,6 @@
 
 # System modules
 from typing import Dict, Any, List, Tuple, Union
-import datetime
 import os.path
 import glob
 
@@ -48,7 +47,7 @@ def link_first_guess(
         input_folder: str,
         config: Dict[str, Any],
         cycle_config: Dict[str, Any],
-        analysis_time: datetime.datetime
+        analysis_time: pd.Timestamp
 ) -> List[str]:
     logger = prefect.context.get('logger')
     fg_file_path = os.path.join(parent_model_output, config['obs']['fg_files'])
@@ -68,7 +67,7 @@ def link_first_guess(
 @task
 def load_first_guess(
         fg_files: List[str],
-        obs_window: Tuple[datetime.datetime, datetime.datetime],
+        obs_window: Tuple[pd.Timestamp, pd.Timestamp],
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         ens_members: List[int],
@@ -148,7 +147,7 @@ def load_constant_data(
 
 @task
 def load_obs(
-        obs_window: Tuple[datetime.datetime, datetime.datetime],
+        obs_window: Tuple[pd.Timestamp, pd.Timestamp],
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any],
         client: Client,
