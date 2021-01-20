@@ -49,12 +49,12 @@ __all__ = [
 
 
 def distance_func(x, y):
-    diff_obs_cos_deg = y[:, :-1] - x[:-1]
+    diff_obs_cos_deg = y.values[:, 1:-1] - x[1:-1]
     diff_obs_cos_m = diff_obs_cos_deg * DEG_TO_M
     dist_obs_cos_2d = np.sqrt(np.sum(diff_obs_cos_m**2, axis=-1))
 
     cos_press = press_int(x[-1])
-    obs_press = press_int(y[:, -1])
+    obs_press = press_int(y.values[:, -1])
     obs_lnp = np.log(obs_press)
     cos_lnp = np.log(cos_press)
     dist_obs_cos_vert = np.abs(cos_lnp - obs_lnp)
