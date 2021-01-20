@@ -36,11 +36,12 @@ def get_pytassim_flow(
         load_background: Task,
         load_first_guess: Task,
         load_obs: Task,
-        post_process_obs: Task,
         initialize_assimilation: Task,
         post_process_analysis: Task,
         write_analysis: Task,
+        post_process_obs: Task = default_post_process_obs,
 ):
+
     with Flow('pytassim') as pytassim_flow:
         start_time = Parameter('start_time')
         end_time = Parameter('end_time')
