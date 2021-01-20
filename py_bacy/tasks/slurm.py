@@ -44,7 +44,7 @@ def check_slurm_running(
             pids_running = {pid: pid in squeue_output for pid in pids}
             logger = prefect.context.get('logger')
             logger.info('Still runnning {0:d}/{1:d}'.format(
-                int(np.sum(pids_running.values())), len(pids_running)
+                int(np.sum(list(pids_running.values()))), len(pids_running)
             ))
             logger.debug(
                 'Running PIDS: {0}'.format(pids_running)
