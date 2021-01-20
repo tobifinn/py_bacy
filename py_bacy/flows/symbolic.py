@@ -47,7 +47,8 @@ def get_symbolic_flow(
         )
 
         ens_suffix, ens_range = construct_ensemble(
-            cycle_config=cycle_config)
+            cycle_config=cycle_config
+        )
         zipped_directories = create_directory_structure.map(
             directories=unmapped(('input', 'output')),
             run_dir=unmapped(run_dir),

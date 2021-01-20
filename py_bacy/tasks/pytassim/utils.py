@@ -84,13 +84,6 @@ def get_observation_window(
             pd.Timedelta('0h'),
             lead_timedelta
         ]
-    if obs_timedelta[1] > lead_timedelta:
-        logger.warning(
-            'The observation time delta is larger than the lead time delta,'
-            'I will restrict the observation time delta to the lead time '
-            'delta!'
-        )
-        obs_timedelta[1] = lead_timedelta
     obs_times = (start_time + obs_timedelta[0], start_time + obs_timedelta[1])
     return obs_times
 
