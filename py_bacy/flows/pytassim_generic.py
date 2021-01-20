@@ -171,21 +171,21 @@ def get_pytassim_flow(
             analysis=analysis,
             model_dataset=model_dataset
         )
+        #
+        # assimilation_diagnostics = info_assimilation(
+        #     analysis=analysis_dataset,
+        #     background=background,
+        #     run_dir=run_dir,
+        #     assim_config=pytassim_config,
+        #     cycle_config=cycle_config,
+        #     client=client
+        # )
 
         output_files, written_analysis = write_analysis(
             analysis=analysis_dataset,
             background_files=linked_bg_files,
             output_dirs=output_dirs,
             analysis_time=analysis_time,
-            assim_config=pytassim_config,
-            cycle_config=cycle_config,
-            client=client
-        )
-
-        assimilation_diagnostics = info_assimilation(
-            analysis=written_analysis,
-            background=background,
-            run_dir=run_dir,
             assim_config=pytassim_config,
             cycle_config=cycle_config,
             client=client
