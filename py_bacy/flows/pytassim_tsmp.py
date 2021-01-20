@@ -29,6 +29,7 @@ def get_pytassim_clm(
         link_first_guess: Task,
         load_first_guess: Task,
         load_obs: Task,
+        post_process_obs: Task,
         initialize_assimilation: Task
 ) -> Flow:
     pytassim_clm_flow = get_pytassim_flow(
@@ -37,6 +38,7 @@ def get_pytassim_clm(
         load_background=clm.load_background,
         load_first_guess=load_first_guess,
         load_obs=load_obs,
+        post_process_obs=post_process_obs,
         initialize_assimilation=initialize_assimilation,
         post_process_analysis=clm.post_process_analysis,
         write_analysis=clm.write_analysis,
@@ -48,6 +50,7 @@ def get_pytassim_cosmo(
         link_first_guess: Task,
         load_first_guess: Task,
         load_obs: Task,
+        post_process_obs: Task,
         initialize_assimilation: Task
 ) -> Flow:
     pytassim_cos_flow = get_pytassim_flow(
@@ -56,6 +59,7 @@ def get_pytassim_cosmo(
         load_background=cosmo.load_background,
         load_first_guess=load_first_guess,
         load_obs=load_obs,
+        post_process_obs=post_process_obs,
         initialize_assimilation=initialize_assimilation,
         post_process_analysis=cosmo.post_process_analysis,
         write_analysis=cosmo.write_analysis,

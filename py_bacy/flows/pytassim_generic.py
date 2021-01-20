@@ -36,6 +36,7 @@ def get_pytassim_flow(
         load_background: Task,
         load_first_guess: Task,
         load_obs: Task,
+        post_process_obs: Task,
         initialize_assimilation: Task,
         post_process_analysis: Task,
         write_analysis: Task,
@@ -139,6 +140,11 @@ def get_pytassim_flow(
                 client=client
             )
         first_guess = merge(first_guess, Constant(None))
+
+        observations, first_guess = post_process_obs(
+            observations=observations,
+            first_guess=first_guess
+        )
 
         # obs_diagnostics = info_observations(
         #     first_guess=ds_fg,
