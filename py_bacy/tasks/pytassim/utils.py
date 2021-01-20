@@ -146,6 +146,7 @@ def assimilate(
         pseudo_state=first_guess,
         analysis_time=analysis_time
     )
+    analysis = analysis.compute()
     return analysis
 
 
