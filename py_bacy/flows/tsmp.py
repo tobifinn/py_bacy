@@ -86,7 +86,7 @@ def get_tsmp_flow():
             clm_bg_fname = get_clm_bg_fname(curr_time=model_start_time)
             cos_fname_template = slice_by_key(
                 value_to_sliced=tsmp_config,
-                key_value=('COSMO', 'bg_files')
+                key_tuple=('COSMO', 'bg_files')
             )
             cos_bg_fname = get_cos_bg_fname(
                 fname_template=cos_fname_template, curr_time=model_start_time
