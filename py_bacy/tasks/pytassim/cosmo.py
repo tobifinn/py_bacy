@@ -96,7 +96,7 @@ def load_background(
         client: Client,
 ) -> Tuple[xr.Dataset, xr.DataArray]:
     ds_cosmo = load_ens_data.run(
-        file_paths=bg_files,
+        file_paths=bg_files, client=client
     )
     ds_cosmo['ensemble'] = ens_members
     background = preprocess_cosmo(ds_cosmo, assim_config['assim_vars'])

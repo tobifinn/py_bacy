@@ -80,7 +80,7 @@ def load_first_guess(
         )
     )
     ds_first_guess = load_ens_data.run(
-        file_paths=fg_files
+        file_paths=fg_files, client=client
     )
     logger.debug('Loaded first guess dataset {0}'.format(ds_first_guess))
     ds_first_guess['ensemble'] = ens_members
