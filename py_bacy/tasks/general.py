@@ -50,11 +50,25 @@ class PyBacyFlowTask(Task):
             **task_kwargs
     ):
         super().__init__(**task_kwargs)
+        self._flow_kwargs = {}
         self.flow = flow
         self.name = name
         self.config_path = config_path
         self.parent_model_name = parent_model_name
         self.flow_kwargs = flow_kwargs
+
+    @property
+    def flow_kwargs(self) -> Dict[str, Any]:
+        return self._flow_kwargs
+
+    @flow_kwargs.setter
+    def flow_kwargs(self, new_kwargs: Union[Dict[str, Any], None]):
+        if new_kwargs is None:
+            self._flow_kwargs = {}
+        elif isinstance(new_kwargs, dict):
+            self._flow_kwargs = new_kwargs
+        else:
+            raise TypeError('Flow kwargs have to be None or a dict!')
 
     def run(
             self,
