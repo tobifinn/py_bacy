@@ -65,11 +65,11 @@ class CyclingEngine(object):
             self.config['TIME']['end_time'],
             format=self.config['TIME']['time_format']
         )
-        analysis_timedelta = pd.to_datetime(
+        analysis_timedelta = pd.to_timedelta(
             self.config['TIME']['analysis_step'],
             unit='seconds'
         )
-        lead_timedelta = pd.to_datetime(
+        lead_timedelta = pd.to_timedelta(
             self.config['TIME']['cycle_lead_time'],
             unit='seconds'
         )
@@ -85,7 +85,11 @@ class CyclingEngine(object):
                     run_end_time.strftime('%Y-%m-%d %H:%Mz'),
                 )
             )
-            self.run_single_time(time, analysis_time, run_end_time)
+            self.run_single_time(
+                start_time=time,
+                analysis_time=analysis_time,
+                end_time=run_end_time
+            )
             logger.info(
                 'Finished with time {0:s}, analysis time {1:s} and '
                 'run end time: {2:s}'.format(
