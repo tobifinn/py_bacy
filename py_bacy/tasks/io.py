@@ -28,8 +28,7 @@ from tqdm.autonotebook import tqdm
 # Internal modules
 
 
-@task
-def load_data_from_paths(
+def load_single_member(
         file_paths: List[str]
 ) -> xr.Dataset:
     """
@@ -44,7 +43,7 @@ def load_data_from_paths(
     loaded_ds : xr.Dataset
     """
     loaded_ds = xr.open_mfdataset(
-        file_paths, parallel=True, combine='nested',
+        file_paths, parallel=False, combine='nested',
         concat_dim='time', decode_cf=True, decode_times=True,
         data_vars='minimal', coords='minimal', compat='override'
     )
@@ -54,6 +53,7 @@ def load_data_from_paths(
 @task
 def load_ens_data(
         file_paths: Union[List[str], List[List[str]]],
+        client: Client
 ) -> xr.Dataset:
     """
     Load ensemble data with xarray and dask from given file paths.
@@ -64,6 +64,9 @@ def load_ens_data(
     file_paths : List[str] or List[List[str]]
         The items of this list will be passed to `xarray.open_mfdataset`.
         All ensemble members have to result to the same ensemble structure.
+    client : None or distributed.Client, optional
+        This client is used to load the data for each ensemble member in
+        paralllel.
 
     Returns
     -------
@@ -76,8 +79,10 @@ def load_ens_data(
     ds_ens_list = []
     pbar_paths = tqdm(file_paths)
     for mem_paths in pbar_paths:
-        ds_mem = load_data_from_paths.run(file_paths=mem_paths)
+        ds_mem = dask.delayed(load_single_member)(file_paths=mem_paths)
         ds_ens_list.append(ds_mem)
+    ds_ens_list = client.compute(ds_ens_list)
+    ds_ens_list = client.gather(ds_ens_list)
     logger.info('Starting to concat ensemble')
     ds_ens = xr.concat(ds_ens_list, dim='ensemble')
     return ds_ens
