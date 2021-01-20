@@ -149,12 +149,12 @@ def get_pytassim_flow(
             first_guess=first_guess
         )
 
-        # obs_diagnostics = info_observations(
-        #     first_guess=ds_fg,
-        #     observations=ds_obs,
-        #     run_dir=run_dir,
-        #     client=client
-        # )
+        obs_diagnostics = info_observations(
+            first_guess=ds_fg,
+            observations=ds_obs,
+            run_dir=run_dir,
+            client=client
+        )
 
         analysis = assimilate(
             assimilation=assimilation,
@@ -179,12 +179,14 @@ def get_pytassim_flow(
             client=client
         )
 
-        # assimilation_diagnostics = info_assimilation(
-        #     analysis=written_analysis,
-        #     background=ds_bg,
-        #     run_dir=run_dir,
-        #     client=client
-        # )
+        assimilation_diagnostics = info_assimilation(
+            analysis=written_analysis,
+            background=background,
+            run_dir=run_dir,
+            assim_config=pytassim_config,
+            cycle_config=cycle_config,
+            client=client
+        )
 
         analysis_dir = construct_rundir(
             name='analysis',

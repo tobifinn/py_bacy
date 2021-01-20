@@ -88,7 +88,7 @@ def load_clm_restart_files(
         ens_members: List[int],
 ) -> xr.Dataset:
     ds_clm = load_ens_data.run(
-        file_paths=bg_files,
+        file_paths=bg_files, client=client
     )
     ds_clm['ensemble'] = ens_members
     return ds_clm
