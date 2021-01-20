@@ -281,7 +281,7 @@ def create_analysis_dir(
         analysis_time: pd.Timestamp,
         ens_suffix: str
 ) -> str:
-    analysis_dir = construct_rundir(
+    analysis_dir = construct_rundir.run(
         name='analysis',
         time=analysis_time,
         cycle_config=cycle_config,
