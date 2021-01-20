@@ -32,12 +32,12 @@ def get_symbolic_flow(
 ) -> Flow:
     with Flow('symbolic') as symbolic_flow:
         start_time = Parameter('start_time')
-        end_time = Parameter('end_time')
         analysis_time = Parameter('analysis_time')
         config_path = Parameter('config_path')
         cycle_config = Parameter('cycle_config')
         name = Parameter('name')
         parent_model_name = Parameter('parent_model_name', default=None)
+        _ = Parameter('end_time')()
 
         pytassim_config = config_reader(config_path)
         run_dir = construct_rundir(
@@ -83,6 +83,6 @@ def get_symbolic_flow(
         )
         linked_analysis_files = link_analysis.map(
             output_file=linked_output_files,
-            analysis_folder=analysis_dirs
+            analysis_folder=analysis_dirs,
         )
     return symbolic_flow
