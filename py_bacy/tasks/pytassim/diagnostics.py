@@ -143,7 +143,7 @@ def describe_diff_mean(arr):
 def get_obs_mean_statistics(
         obs_equivalent: xr.DataArray,
         filtered_obs: xr.DataArray
-) -> OrderedDict[str, pd.DataFrame]:
+):
     statistics = OrderedDict()
     fg_mean = obs_equivalent.mean('ensemble')
     diff_mean = filtered_obs - fg_mean
