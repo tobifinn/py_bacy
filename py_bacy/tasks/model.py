@@ -238,6 +238,7 @@ def loop_model_runs(
             parent_model_name=curr_parent_name,
             restart=curr_restart,
             model_start_time=model_steps[time_pos],
+            analysis_time=model_steps[time_pos+1],
             end_time=model_steps[time_pos+1],
             **kwargs
         )
