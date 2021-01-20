@@ -64,7 +64,7 @@ def plot_histogram(values, x_axis='Differences obs-mean', bins=50):
 
 def write_obs_plots(fg_grouped, obs_grouped, run_dir):
     fg_mean = fg_grouped.mean('ensemble')
-    diff_mean = obs_grouped['observations'] - fg_mean
+    diff_mean = obs_grouped - fg_mean
     out_dir = os.path.join(run_dir, 'output')
     for group in diff_mean['obs_group']:
         fig, ax = plot_histogram(
@@ -79,19 +79,19 @@ def write_obs_plots(fg_grouped, obs_grouped, run_dir):
             int(group)
         )
         fig.savefig(os.path.join(out_dir, file_name))
-    diff_ens = obs_grouped['observations'] - fg_grouped
-    for group in obs_grouped['observations']['obs_group']:
+    diff_ens = obs_grouped - fg_grouped
+    for group in obs_grouped['obs_group']:
         group = group.drop('ensemble')
         fig, ax = plot_rank_hist(
             fg_grouped.sel(obs_group=group),
-            obs_grouped['observations'].sel(obs_group=group)
+            obs_grouped.sel(obs_group=group)
         )
-        file_name = 'rank_hist_{0}.png'.format(int(group))
+        file_name = 'obs_info_rank_hist_{0}.png'.format(int(group))
         fig.savefig(os.path.join(out_dir, file_name))
         fig, ax = plot_histogram(
             diff_ens.sel(obs_group=group).values.flatten()
         )
-        file_name = 'hist_ens_diff_{0}.png'.format(
+        file_name = 'obs_info_hist_ens_diff_{0}.png'.format(
             int(group)
         )
         fig.savefig(os.path.join(out_dir, file_name))

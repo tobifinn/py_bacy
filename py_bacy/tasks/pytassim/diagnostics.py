@@ -58,7 +58,7 @@ def info_observations(
     for name, df in statistics.items():
         write_df(
             df, run_dir=run_dir,
-            filename='innov_mean_{0:s}.txt'.format(name)
+            filename='info_obs_{0:s}.txt'.format(name)
         )
     write_obs_plots(obs_equivalent, filtered_obs, run_dir)
 
