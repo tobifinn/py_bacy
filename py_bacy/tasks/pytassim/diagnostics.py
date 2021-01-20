@@ -31,6 +31,12 @@ from distributed import Client
 # Internal modules
 
 
+__all__ = [
+    'info_observations',
+    'info_assimilation'
+]
+
+
 @task
 def info_observations(
         first_guess: xr.DataArray,

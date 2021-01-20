@@ -25,6 +25,7 @@ from py_bacy.tasks.general import *
 from py_bacy.tasks.system import *
 from py_bacy.tasks.utils import *
 from py_bacy.tasks.pytassim.utils import *
+from py_bacy.tasks.pytassim.diagnostics import *
 
 
 logger = logging.getLogger(__name__)
