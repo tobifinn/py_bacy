@@ -12,7 +12,7 @@
 
 # System modules
 import logging
-from typing import Iterable, Tuple, List, Dict, Any
+from typing import Iterable, Tuple, List, Dict, Any, Union
 import os.path
 from collections import OrderedDict
 
@@ -40,11 +40,14 @@ __all__ = [
 @task
 def info_observations(
         first_guess: xr.DataArray,
-        observations: Iterable[xr.Dataset],
+        observations: Union[xr.Dataset, Iterable[xr.Dataset]],
         run_dir: str,
         client: Client
 ):
     from .plot import write_obs_plots
+
+    if isinstance(observations, xr.Dataset):
+        observations = (observations, )
 
     obs_equivalent, filtered_obs = apply_obs_operator(
         first_guess=first_guess, observations=observations
