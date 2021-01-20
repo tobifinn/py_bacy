@@ -151,8 +151,8 @@ def get_pytassim_flow(
         )
 
         obs_diagnostics = info_observations(
-            first_guess=ds_fg,
-            observations=ds_obs,
+            first_guess=first_guess,
+            observations=observations,
             run_dir=run_dir,
             client=client
         )
