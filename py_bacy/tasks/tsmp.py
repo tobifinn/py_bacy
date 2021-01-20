@@ -60,9 +60,9 @@ def create_tsmp_placeholders(
         This is the dictionary with the placeholders for the TerrSysMP namelist.
         The placeholders have all the form `%PLACEHOLDER_NAME%`.
     """
-    ini_time = pd.Timestamp.strptime(
+    ini_time = pd.to_datetime(
         cycle_config['TIME']['start_time'],
-        cycle_config['TIME']['time_format'],
+        format=cycle_config['TIME']['time_format'],
     )
     timedelta_start_ini = model_start_time - ini_time
     h_start = timedelta_start_ini.total_seconds() / 3600
