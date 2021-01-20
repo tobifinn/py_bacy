@@ -44,8 +44,6 @@ def info_observations(
         run_dir: str,
         client: Client
 ):
-    from .plot import write_obs_plots
-
     if isinstance(observations, xr.Dataset):
         observations = (observations, )
 
@@ -60,7 +58,6 @@ def info_observations(
             df, run_dir=run_dir,
             filename='info_obs_{0:s}.txt'.format(name)
         )
-    write_obs_plots(obs_equivalent, filtered_obs, run_dir)
 
 
 @task
