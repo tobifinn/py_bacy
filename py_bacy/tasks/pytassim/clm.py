@@ -52,12 +52,12 @@ __all__ = [
 
 
 def distance_func(x, y):
-    grid_hori = rotated_pole.transform_point(x[1], x[0], plate_carree)[::-1]
-    diff_obs_clm_deg = y[:, :-1] - grid_hori
+    grid_hori = rotated_pole.transform_point(x[2], x[1], plate_carree)[::-1]
+    diff_obs_clm_deg = y.values[:, 1:-1] - grid_hori
     diff_obs_clm_m = diff_obs_clm_deg * DEG_TO_M
     dist_obs_clm_2d = np.sqrt(np.sum(diff_obs_clm_m**2, axis=-1))
 
-    dist_obs_clm_vert = np.abs(y[:, -1]-x[-1])
+    dist_obs_clm_vert = np.abs(y.values[:, -1]-x[-1])
     return dist_obs_clm_2d, dist_obs_clm_vert
 
 
