@@ -86,6 +86,7 @@ def link_background(
 def load_clm_restart_files(
         bg_files: List[str],
         ens_members: List[int],
+        client: Client
 ) -> xr.Dataset:
     ds_clm = load_ens_data.run(
         file_paths=bg_files, client=client
@@ -132,7 +133,8 @@ def load_background(
 ) -> Tuple[xr.Dataset, xr.DataArray]:
     ds_clm = load_clm_restart_files.run(
         bg_files=bg_files,
-        ens_members=ens_members
+        ens_members=ens_members,
+        client=client
     )
     grid_index = load_clm_grid.run(
         utils_path=assim_config['obs']['utils_path']
