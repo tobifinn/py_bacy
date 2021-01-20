@@ -83,7 +83,7 @@ class PyBacyFlowTask(Task):
             cycle_config=cycle_config
         )
         if os.path.isdir(run_dir):
-            self.logger.info(
+            self.logger.warning(
                 'Flow {0:s} already run for start_time: {1}, I\'ll skip the '
                 'run!'.format(
                     self.name,
@@ -92,7 +92,7 @@ class PyBacyFlowTask(Task):
             )
             flow_state = None
         else:
-            self.logger.info(
+            self.logger.warning(
                 'Starting {0:s} with start_time: {1}, analysis_time: {2}, '
                 'and end_time: {3}'.format(
                     self.name, start_time, analysis_time, end_time

@@ -77,7 +77,7 @@ class CyclingEngine(object):
         while time < end_time:
             analysis_time = time + analysis_timedelta
             run_end_time = time + lead_timedelta
-            logger.info(
+            logger.warning(
                 'Starting with time {0:s}, analysis time {1:s} and '
                 'run end time: {2:s}'.format(
                     time.strftime('%Y-%m-%d %H:%Mz'),
@@ -85,12 +85,12 @@ class CyclingEngine(object):
                     run_end_time.strftime('%Y-%m-%d %H:%Mz'),
                 )
             )
-            self.run_single_time(
+            flow_state = self.run_single_time(
                 start_time=time,
                 analysis_time=analysis_time,
                 end_time=run_end_time
             )
-            logger.info(
+            logger.warning(
                 'Finished with time {0:s}, analysis time {1:s} and '
                 'run end time: {2:s}'.format(
                     time.strftime('%Y-%m-%d %H:%Mz'),
