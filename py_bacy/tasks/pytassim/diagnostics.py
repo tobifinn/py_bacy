@@ -146,12 +146,12 @@ def get_obs_mean_statistics(
 ):
     statistics = OrderedDict()
     fg_mean = obs_equivalent.mean('ensemble')
-    diff_mean = filtered_obs - fg_mean
-    statistics['mean'] = describe_diff_mean(diff_mean)
-    diff_mean_time = diff_mean.stack(
+    innovation = filtered_obs - fg_mean
+    statistics['innov'] = describe_diff_mean(innovation)
+    diff_mean_time = innovation.stack(
         group_time=['obs_group', 'time']
     ).transpose('group_time', 'obs_grid_1')
-    statistics['mean_time'] = describe_diff_mean(diff_mean_time)
+    statistics['innov_timed'] = describe_diff_mean(diff_mean_time)
     obs_time = filtered_obs.stack(
         group_time=['obs_group', 'time']
     ).transpose('group_time', 'obs_grid_1')
@@ -161,15 +161,3 @@ def get_obs_mean_statistics(
     ).transpose('group_time', 'obs_grid_1')
     statistics['fg_time'] = describe_diff_mean(fg_time)
     return statistics
-
-
-def write_info_df(array, filename, assim_vars, run_dir):
-    info_df = pd.DataFrame(
-        columns=['min', 'mean', 'max', 'std', '10 %', 'median', '90 %',
-                 'MAI']
-    )
-    for var in assim_vars:
-        var_df = describe_arr(array[var], var)
-        var_df = var_df.reindex(info_df.columns, axis=1)
-        info_df = pd.concat([info_df, var_df], axis=0)
-    write_df(info_df, run_dir, filename)
