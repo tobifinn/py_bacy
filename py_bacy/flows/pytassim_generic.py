@@ -39,8 +39,10 @@ def get_pytassim_flow(
         initialize_assimilation: Task,
         post_process_analysis: Task,
         write_analysis: Task,
-        post_process_obs: Task = default_post_process_obs,
+        post_process_obs: Union[Task, None] = None,
 ):
+    if post_process_obs is None:
+        post_process_obs = default_post_process_obs
 
     with Flow('pytassim') as pytassim_flow:
         start_time = Parameter('start_time')

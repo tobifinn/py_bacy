@@ -12,6 +12,7 @@
 
 # System modules
 import logging
+from typing import Union
 
 # External modules
 from prefect import Flow, Task
@@ -29,8 +30,8 @@ def get_pytassim_clm(
         link_first_guess: Task,
         load_first_guess: Task,
         load_obs: Task,
-        post_process_obs: Task,
-        initialize_assimilation: Task
+        initialize_assimilation: Task,
+        post_process_obs: Union[Task, None] = None,
 ) -> Flow:
     pytassim_clm_flow = get_pytassim_flow(
         link_background=clm.link_background,
@@ -50,8 +51,8 @@ def get_pytassim_cosmo(
         link_first_guess: Task,
         load_first_guess: Task,
         load_obs: Task,
-        post_process_obs: Task,
-        initialize_assimilation: Task
+        initialize_assimilation: Task,
+        post_process_obs: Union[Task, None] = None,
 ) -> Flow:
     pytassim_cos_flow = get_pytassim_flow(
         link_background=cosmo.link_background,
