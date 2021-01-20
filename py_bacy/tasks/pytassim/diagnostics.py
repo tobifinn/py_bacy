@@ -73,7 +73,7 @@ def info_assimilation(
     background_mean = background.mean('ensemble')
     impact = analysis_mean - background_mean
     write_info_df(
-        impact, 'info_impact.txt', assim_vars, run_dir
+        impact, 'info_impact.txt', assim_config['assim_vars'], run_dir
     )
     write_info_df(
         background_mean, 'info_background.txt', assim_config['assim_vars'],
