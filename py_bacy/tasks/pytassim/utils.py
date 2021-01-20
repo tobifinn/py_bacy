@@ -38,7 +38,8 @@ __all__ = [
     'link_files',
     'assimilate',
     'align_obs_first_guess',
-    'link_analysis'
+    'link_analysis',
+    'default_post_process_obs'
 ]
 
 
@@ -180,3 +181,11 @@ def link_analysis(
     analysis_file = os.path.join(analysis_folder, fname_analysis)
     analysis_file = symlink.run(source=output_file, target=analysis_file)
     return analysis_file
+
+
+@task
+def default_post_process_obs(
+        observations: List[xr.Dataset],
+        first_guess: Union[None, xr.DataArray] = None
+) -> Tuple[List[xr.Dataset], Union[None, xr.DataArray]]:
+    return observations, first_guess
