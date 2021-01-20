@@ -63,7 +63,7 @@ class PyBacyFlowTask(Task):
             end_time: pd.Timestamp,
             cycle_config: Dict[str, Any]
     ) -> Union[State, None]:
-        run_dir = construct_rundir(
+        run_dir = construct_rundir.run(
             name=self.name,
             time=start_time,
             cycle_config=cycle_config
