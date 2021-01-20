@@ -136,7 +136,12 @@ def get_tsmp_flow():
             namelist=unmapped(modified_namelist)
         )
         namelist_paths = initialize_namelist.map(
-            namelist_path=namelist_paths, ens_mem=ens_range
+            namelist_path=namelist_paths, ens_mem=ens_range,
+            upstream_tasks=[
+                unmapped(linked_binaries),
+                linked_clm_start,
+                linked_cos_start,
+            ]
         )
 
         slurm_pids = get_pids(
