@@ -90,6 +90,13 @@ class CyclingEngine(object):
                 analysis_time=analysis_time,
                 end_time=run_end_time
             )
+            if flow_state.is_failed():
+                raise ValueError(
+                    'Cycling failed at {0:s}'.format(
+                        time.strftime('%Y-%m-%d %H:%Mz')
+                    )
+                )
+
             logger.warning(
                 'Finished with time {0:s}, analysis time {1:s} and '
                 'run end time: {2:s}'.format(
