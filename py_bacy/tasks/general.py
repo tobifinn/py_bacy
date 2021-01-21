@@ -75,10 +75,16 @@ class PyBacyFlowTask(Task):
             start_time: pd.Timestamp,
             analysis_time: pd.Timestamp,
             end_time: pd.Timestamp,
-            cycle_config: Dict[str, Any]
+            cycle_config: Dict[str, Any],
+            new_name: Union[None, str] = None,
+            new_parent_model_name: Union[None, str] = None,
+            new_config_path: Union[None, str] = None
     ) -> Union[State, None]:
+        name = new_name or self.name
+        parent_model_name = new_parent_model_name or self.parent_model_name
+        config_path = new_config_path or self.config_path
         run_dir = construct_rundir.run(
-            name=self.name,
+            name=name,
             time=start_time,
             cycle_config=cycle_config
         )
@@ -86,7 +92,7 @@ class PyBacyFlowTask(Task):
             self.logger.warning(
                 'Flow {0:s} already run for start_time: {1}, I\'ll skip the '
                 'run!'.format(
-                    self.name,
+                    name,
                     start_time
                 )
             )
@@ -95,7 +101,7 @@ class PyBacyFlowTask(Task):
             self.logger.warning(
                 'Starting {0:s} with start_time: {1}, analysis_time: {2}, '
                 'and end_time: {3}'.format(
-                    self.name, start_time, analysis_time, end_time
+                    name, start_time, analysis_time, end_time
                 )
             )
             flow_state = self.flow.run(
@@ -103,9 +109,9 @@ class PyBacyFlowTask(Task):
                 analysis_time=analysis_time,
                 end_time=end_time,
                 cycle_config=cycle_config,
-                name=self.name,
-                config_path=self.config_path,
-                parent_model_name=self.parent_model_name,
+                name=name,
+                config_path=config_path,
+                parent_model_name=parent_model_name,
                 **self.flow_kwargs
             )
         return flow_state
