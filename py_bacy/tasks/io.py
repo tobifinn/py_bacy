@@ -43,7 +43,7 @@ def load_single_member(
     loaded_ds : xr.Dataset
     """
     loaded_ds = xr.open_mfdataset(
-        file_paths, parallel=False, combine='nested',
+        file_paths, parallel=True, combine='nested',
         concat_dim='time', decode_cf=True, decode_times=True,
         data_vars='minimal', coords='minimal', compat='override'
     )
@@ -79,10 +79,8 @@ def load_ens_data(
     ds_ens_list = []
     pbar_paths = tqdm(file_paths)
     for mem_paths in pbar_paths:
-        ds_mem = dask.delayed(load_single_member)(file_paths=mem_paths)
+        ds_mem = load_single_member(file_paths=mem_paths)
         ds_ens_list.append(ds_mem)
-    ds_ens_list = client.compute(ds_ens_list)
-    ds_ens_list = client.gather(ds_ens_list)
     logger.info('Starting to concat ensemble')
     ds_ens = xr.concat(ds_ens_list, dim='ensemble')
     return ds_ens
