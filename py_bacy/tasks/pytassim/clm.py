@@ -145,6 +145,7 @@ def load_background(
         analysis_time=analysis_time,
         grid_index=grid_index
     )
+    background = background.load()
     return ds_clm, background
 
 

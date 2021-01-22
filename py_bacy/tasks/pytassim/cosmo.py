@@ -100,6 +100,7 @@ def load_background(
     )
     ds_cosmo['ensemble'] = ens_members
     background = preprocess_cosmo(ds_cosmo, assim_config['assim_vars'])
+    background = background.load()
     return ds_cosmo, background
 
 
