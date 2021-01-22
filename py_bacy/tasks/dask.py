@@ -26,6 +26,16 @@ from dask_jobqueue import SLURMCluster
 # Internal modules
 
 
+__all__ = [
+    'get_cluster_mode',
+    'initialize_slurm_cluster',
+    'initialize_none_cluster',
+    'initialize_local_cluster',
+    'shutdown_cluster',
+    'scale_client'
+]
+
+
 @task
 def get_cluster_mode(
         cycle_config: Dict[str, Any],
