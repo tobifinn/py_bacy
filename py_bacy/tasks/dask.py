@@ -181,7 +181,7 @@ def initialize_none_cluster() -> Tuple[Client, LocalCluster]:
 
 
 @task(trigger=all_finished)
-def shutdown_cluster(client, cluster):
+def shutdown_cluster(client: Client, cluster: Cluster):
     """
     This task shuts down given client and cluster.
 
@@ -194,3 +194,29 @@ def shutdown_cluster(client, cluster):
     """
     client.close()
     cluster.close()
+
+
+@task
+def scale_client(client: Client, n_workers: int = 0) -> int:
+    """
+    Scale the number of workers within given client
+
+    Parameters
+    ----------
+    client : distributed.Client
+        This client will be scaled.
+    n_workers : int, optional
+        This specifies the number of workers that should be used. Default is 0.
+
+    Returns
+    -------
+    old_n_workers : int
+        The old number of workers, before the client was scaled.
+    """
+    old_n_workers = len(client.cluster.workers)
+    client.cluster.scale(n_workers)
+    logger = prefect.context.get('logger')
+    logger.info('Scaled the number of workers from {0:d} to {1:d}'.format(
+        old_n_workers, n_workers
+    ))
+    return old_n_workers
