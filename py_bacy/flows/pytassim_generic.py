@@ -152,12 +152,12 @@ def get_pytassim_flow(
             first_guess=first_guess
         )
 
-        obs_diagnostics = info_observations(
-            first_guess=first_guess,
-            observations=observations,
-            run_dir=run_dir,
-            client=client,
-        )
+        # obs_diagnostics = info_observations(
+        #     first_guess=first_guess,
+        #     observations=observations,
+        #     run_dir=run_dir,
+        #     client=client,
+        # )
 
         analysis = assimilate(
             assimilation=assimilation,
@@ -165,8 +165,6 @@ def get_pytassim_flow(
             observations=observations,
             first_guess=first_guess,
             analysis_time=analysis_time,
-            upstream_tasks=[obs_diagnostics,]
-
         )
 
         analysis_dataset = post_process_analysis(
