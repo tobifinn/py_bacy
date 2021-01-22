@@ -134,20 +134,18 @@ def write_analysis(
         cycle_config: Dict[str, Any],
         client: Client,
 ) -> Tuple[List[str], xr.Dataset]:
-    loaded_analysis = analysis.compute(client=client)
-
     analysis_fname = analysis_time.strftime(ANA_FNAME)
     analysis_files = [
         os.path.join(output_dir, analysis_fname) for output_dir in output_dirs
     ]
     _ = write_ens_data.run(
-        dataset_to_write=loaded_analysis,
+        dataset_to_write=analysis,
         source_paths=background_files,
         target_paths=analysis_files,
         assim_vars=assim_config['assim_vars'],
         client=client
     )
-    return analysis_files, loaded_analysis
+    return analysis_files, analysis
 
 
 @task
