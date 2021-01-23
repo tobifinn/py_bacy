@@ -154,6 +154,7 @@ def post_process_analysis(
         analysis: xr.DataArray,
         model_dataset: xr.Dataset
 ) -> xr.Dataset:
+    analysis = analysis.load()
     analysis = postprocess_clm(analysis, model_dataset)
     tot_water_bg = model_dataset['WA'] + model_dataset['H2OSOI_LIQ'].sum(
         'levtot') + model_dataset['H2OCAN'].values

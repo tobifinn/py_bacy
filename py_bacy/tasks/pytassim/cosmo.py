@@ -109,6 +109,7 @@ def post_process_analysis(
         analysis: xr.DataArray,
         model_dataset: xr.Dataset
 ) -> xr.Dataset:
+    analysis = analysis.compute()
     analysis = postprocess_cosmo(analysis, model_dataset)
     analysis = constrain_var.run(analysis, 'QV', lower_bound=0)
     analysis = constrain_var.run(analysis, 'QC', lower_bound=0)
