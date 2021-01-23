@@ -98,6 +98,7 @@ def initialize_slurm_cluster(
         queue=cycle_config['EXPERIMENT']['partition'],
         walltime=cycle_config['CLUSTER']['wallclock'],
         n_workers=cycle_config['CLUSTER']['n_workers'],
+        threads_per_worker=1,
         nanny=True,
         env_extra=[
             'export OMP_NUM_THREADS=1',
