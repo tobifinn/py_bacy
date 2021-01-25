@@ -45,7 +45,7 @@ __all__ = [
 
 @task(name='get_observation_window')
 def get_observation_window(
-        start_time: pd.Timestamp,
+        analysis_time: pd.Timestamp,
         assim_config: Dict[str, Any],
         cycle_config: Dict[str, Any]
 ) -> Tuple[pd.Timestamp, pd.Timestamp]:
@@ -54,7 +54,7 @@ def get_observation_window(
 
     Parameters
     ----------
-    start_time : pd.Timestamp
+    analysis_time : pd.Timestamp
         This is the basis time from where the time delta, specifing
         the relative assimilation window, is defined.
     assim_config : Dict[str, Any]
@@ -84,7 +84,8 @@ def get_observation_window(
             pd.Timedelta('0h'),
             lead_timedelta
         ]
-    obs_times = (start_time + obs_timedelta[0], start_time + obs_timedelta[1])
+    obs_times = (analysis_time + obs_timedelta[0],
+                 analysis_time + obs_timedelta[1])
     return obs_times
 
 
