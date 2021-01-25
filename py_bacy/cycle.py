@@ -17,6 +17,7 @@ from copy import deepcopy
 import os
 import tarfile
 import shutil
+import warnings
 
 # External modules
 import yaml
@@ -30,6 +31,9 @@ from .utilities import round_time
 from .utilities import check_if_folder_exist_create
 
 
+warnings.warn('This old pipeline system is deprecated and will be removed in '
+              'the next version of PyBacy. Please use the new prefect-based '
+              'DAG system.', DeprecationWarning)
 logger = logging.getLogger(__name__)
 
 
