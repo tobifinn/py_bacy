@@ -108,7 +108,7 @@ def get_pytassim_flow(
         )
 
         obs_window = get_observation_window(
-            start_time=start_time,
+            analysis_time=analysis_time,
             assim_config=pytassim_config,
             cycle_config=cycle_config
         )
