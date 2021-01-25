@@ -57,7 +57,7 @@ class CyclingEngine(object):
         return flow_state
 
     def start(self):
-        time = pd.to_datetime(
+        curr_time = pd.to_datetime(
             self.config['TIME']['start_time'],
             format=self.config['TIME']['time_format']
         )
@@ -74,34 +74,34 @@ class CyclingEngine(object):
             unit='seconds'
         )
 
-        while time < end_time:
-            analysis_time = time + analysis_timedelta
-            run_end_time = time + lead_timedelta
+        while curr_time < end_time:
+            analysis_time = curr_time + analysis_timedelta
+            run_end_time = curr_time + lead_timedelta
             logger.warning(
                 'Starting with time {0:s}, analysis time {1:s} and '
                 'run end time: {2:s}'.format(
-                    time.strftime('%Y-%m-%d %H:%Mz'),
+                    curr_time.strftime('%Y-%m-%d %H:%Mz'),
                     analysis_time.strftime('%Y-%m-%d %H:%Mz'),
                     run_end_time.strftime('%Y-%m-%d %H:%Mz'),
                 )
             )
             flow_state = self.run_single_time(
-                start_time=time,
+                start_time=curr_time,
                 analysis_time=analysis_time,
                 end_time=run_end_time
             )
             if flow_state.is_failed():
                 raise ValueError(
                     'Cycling failed at {0:s}'.format(
-                        time.strftime('%Y-%m-%d %H:%Mz')
+                        curr_time.strftime('%Y-%m-%d %H:%Mz')
                     )
                 )
 
             logger.warning(
                 'Finished with time {0:s}, analysis time {1:s} and '
                 'run end time: {2:s}'.format(
-                    time.strftime('%Y-%m-%d %H:%Mz'),
+                    curr_time.strftime('%Y-%m-%d %H:%Mz'),
                     analysis_time.strftime('%Y-%m-%d %H:%Mz'),
                     run_end_time.strftime('%Y-%m-%d %H:%Mz'),
                 ))
-            time = analysis_time
+            curr_time = analysis_time
