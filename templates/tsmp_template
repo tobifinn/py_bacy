@@ -30,11 +30,11 @@ clm_start_sec=%CLM_START_SEC%
 clm_steps=%CLM_STEPS%
 clm_out_ts=%CLM_OUT_TS%
 
-proc_shift=$(((($ens_mem-1)%n_runs)*72))
-cos_start_proc=$((proc_shift+0))
-cos_end_proc=$((proc_shift+62))
-clm_start_proc=$((proc_shift+63))
-clm_end_proc=$((proc_shift+71))
+proc_shift=$(((($ens_mem - 1) % $n_runs) * 72))
+cos_start_proc=$(($proc_shift+0))
+cos_end_proc=$(($proc_shift+62))
+clm_start_proc=$(($proc_shift+63))
+clm_end_proc=$(($proc_shift+71))
 
 oas_int=$(($h_int*3600+$clm_dt))
 
