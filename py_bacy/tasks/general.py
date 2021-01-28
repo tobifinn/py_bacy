@@ -14,6 +14,7 @@
 from typing import Union, Dict, Any, Iterable, Tuple, List
 import os.path
 import glob
+import time
 
 # External modules
 import prefect
@@ -104,6 +105,7 @@ class PyBacyFlowTask(Task):
                     name, start_time, analysis_time, end_time
                 )
             )
+            run_start_time = time.time()
             flow_state = self.flow.run(
                 start_time=start_time,
                 analysis_time=analysis_time,
@@ -113,6 +115,13 @@ class PyBacyFlowTask(Task):
                 config_path=config_path,
                 parent_model_name=parent_model_name,
                 **self.flow_kwargs
+            )
+            self.logger.warning(
+                'Finished {0:s} with start_time: {1}, analysis_time: {2}, '
+                'and end_time: {3} within {4:.1f} s'.format(
+                    name, start_time, analysis_time, end_time,
+                    time.time()-run_start_time
+                )
             )
         return flow_state
 
