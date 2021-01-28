@@ -30,7 +30,7 @@ clm_start_sec=%CLM_START_SEC%
 clm_steps=%CLM_STEPS%
 clm_out_ts=%CLM_OUT_TS%
 
-proc_shift=$((((ens_mem-1)%n_runs)*72))
+proc_shift=$(((($ens_mem-1)%n_runs)*72))
 cos_start_proc=$((proc_shift+0))
 cos_end_proc=$((proc_shift+62))
 clm_start_proc=$((proc_shift+63))
@@ -76,14 +76,9 @@ rm -f ${SCRIPTDIR}/%NAME%_${ens_mem}_job.sh
 # PROCESS Settings
 #
 
-nprocspernode=48
-NPX=6
-NPY=7
+NPX=7
+NPY=9
 NPIO=0
-NP1=`expr $NPX \* $NPY`
-NP=`expr $NP1 + $NPIO`
-N1=`expr $NP + $nprocspernode - 1`
-NODES=`expr $N1 \/ $nprocspernode`
 
 
 cd ${WORKDIR}
