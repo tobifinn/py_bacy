@@ -667,7 +667,7 @@ do
   date
   echo "started" > started.txt
   rm -rf YU*
-  srun -N 1 --exclusive --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo \$(printf "\${mem_dir} finished") > %RUN_DIR%/output/finished.txt &
+  srun --nodes 1 --ntasks-per-node 72 --relative=\${iter_num} --exclusive --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo \$(printf "\${mem_dir} finished") > %RUN_DIR%/output/finished.txt &
   pids[\${iter_num}]=\$!
 
 done
