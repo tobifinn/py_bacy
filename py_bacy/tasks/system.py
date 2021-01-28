@@ -15,6 +15,7 @@ import logging
 import os
 from typing import List, Iterable
 import tempfile
+import shutil
 
 # External modules
 import prefect
@@ -27,11 +28,50 @@ logger = logging.getLogger(__name__)
 
 
 __all__ = [
+    'copyfile',
     'symlink',
     'create_folders',
     'create_directory_structure',
 ]
 
+
+@task
+def copyfile(source: str, target: str) -> str:
+    """
+    Symlink a given source path to given target path. This is done with an
+    atomic operation. If the target path already exists, it will be
+    overwritten by the symbolic link.
+
+    Parameters
+    ----------
+    source : str
+        This is the source path, which have to be available.
+    target : str
+        This is the target path, which will be overwritten if it already exists.
+
+    Returns
+    -------
+    target: str
+        The path to the linked target.
+
+    Raises
+    ------
+    ValueError
+        A ValueError is raised if the source path does not exists.
+    """
+    if not os.path.exists(source):
+        raise ValueError(
+            'Give source path {0:s} doesn\'t exists!'.format(
+                source
+            )
+        )
+    logger = prefect.context.get('logger')
+    logger.debug('Symlink: {0:s} -> {1:s}'.format(source, target))
+    temp_name = next(tempfile._get_candidate_names())
+    tmp_file = os.path.join(os.path.dirname(target), temp_name)
+    shutil.copyfile(source, tmp_file)
+    os.replace(tmp_file, target)
+    return target
 
 @task
 def symlink(source: str, target: str) -> str:
