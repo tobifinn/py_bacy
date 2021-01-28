@@ -664,7 +664,7 @@ do
 
   fi
 
-  iter_num=$(((\${CURR_MEM}-1)%${n_runs}))
+  iter_num=\$(((\${CURR_MEM}-1)%${n_runs}))
   date
   echo "started" > started.txt
   rm -rf YU*
