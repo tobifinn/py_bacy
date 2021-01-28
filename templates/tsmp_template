@@ -603,9 +603,8 @@ cd ${WORKDIR}
 
 cat > slm_multiprog_mapping.conf << end_multiprog
 
-${cos_start_proc}-${cos_end_proc} ${WORKDIR}/lmparbin_pur
-
-${clm_start_proc}-${clm_end_proc} ${WORKDIR}/clm
+0-62 ${WORKDIR}/lmparbin_pur
+63-71 ${WORKDIR}/clm
 
 end_multiprog
 
@@ -668,7 +667,7 @@ do
   date
   echo "started" > started.txt
   rm -rf YU*
-  srun --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo \$(printf "\${mem_dir} finished") > %RUN_DIR%/output/finished.txt &
+  srun -N 1 --exclusive --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo \$(printf "\${mem_dir} finished") > %RUN_DIR%/output/finished.txt &
   pids[\${iter_num}]=\$!
 
 done
