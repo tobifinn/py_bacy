@@ -665,9 +665,9 @@ do
 
   iter_num=\$(((\${CURR_MEM}-1)%${n_runs}))
   date
-  echo "started" > started.txt
+  echo "started \${iter_num}" >> %RUN_DIR%/input/started.txt
   rm -rf YU*
-  srun -lN1 -r \${iter_num} --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo \$(printf "\${mem_dir} finished") > %RUN_DIR%/output/finished.txt &
+  srun -l --ntasks=72 --nodes=1 -r \${iter_num} --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo "\${mem_dir} finished" >> %RUN_DIR%/input/finished.txt &
   pids[\${iter_num}]=\$!
 
 done
