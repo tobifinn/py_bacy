@@ -69,7 +69,7 @@ def copyfile(source: str, target: str) -> str:
     logger.debug('Symlink: {0:s} -> {1:s}'.format(source, target))
     temp_name = next(tempfile._get_candidate_names())
     tmp_file = os.path.join(os.path.dirname(target), temp_name)
-    shutil.copyfile(source, tmp_file)
+    shutil.copy2(source, tmp_file)
     os.replace(tmp_file, target)
     return target
 
