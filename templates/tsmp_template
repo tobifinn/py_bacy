@@ -30,11 +30,7 @@ clm_start_sec=%CLM_START_SEC%
 clm_steps=%CLM_STEPS%
 clm_out_ts=%CLM_OUT_TS%
 
-proc_shift=$(((($ens_mem - 1) % $n_runs) * 72))
-cos_start_proc=$(($proc_shift+0))
-cos_end_proc=$(($proc_shift+62))
-clm_start_proc=$(($proc_shift+63))
-clm_end_proc=$(($proc_shift+71))
+nodes=$(($n_runs * 2))
 
 oas_int=$(($h_int*3600+$clm_dt))
 
@@ -617,8 +613,8 @@ cat > %NAME%_${ens_dir}_job.sh << end_start_job
 #!/bin/bash
 #SBATCH --job-name="TerrSysMP"
 #SBATCH --account=${account}
-#SBATCH --nodes=${n_runs}
-#SBATCH --ntasks-per-node=72
+#SBATCH --nodes=${nodes}
+#SBATCH --ntasks-per-node=36
 #SBATCH --output=${LOGDIR}/out_%j.out
 #SBATCH --error=${LOGDIR}/err_%j.out
 #SBATCH --time=${wall_clock_time_h}:${wall_clock_time_min}:00
@@ -667,7 +663,7 @@ do
   date
   echo "started \${iter_num}" >> %RUN_DIR%/input/started.txt
   rm -rf YU*
-  srun -l --ntasks=72 --nodes=1 -r \${iter_num} --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo "\${mem_dir} finished" >> %RUN_DIR%/input/finished.txt &
+  srun -l --ntasks=72 --nodes=2 -r \${iter_num} --propagate=STACK,CORE --multi-prog slm_multiprog_mapping.conf && mv \${INPUT_MEM_DIR}/clmoas.clm2.* \${OUTPUT_MEM_DIR} && echo "\${mem_dir} finished" >> %RUN_DIR%/input/finished.txt &
   pids[\${iter_num}]=\$!
 
 done
