@@ -25,8 +25,18 @@ import numpy as np
 
 
 __all__ = [
+    'submit_script',
     'check_slurm_running'
 ]
+
+
+@task
+def submit_script(
+        script_path: str
+) -> str:
+    call_args = ['sbatch', script_path, '|', 'grep', '-o', '[0-9]*']
+    output = subprocess.run(call_args, capture_output=True)
+    return output.stdout.decode('utf-8')
 
 
 @task
