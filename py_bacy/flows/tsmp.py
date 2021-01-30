@@ -144,15 +144,11 @@ def get_tsmp_flow():
             ]
         )
 
-        slurm_pids = get_pids(
-            run_dir=run_dir,
-            upstream_tasks=[
-                namelist_paths,
-                linked_clm_start,
-                linked_cos_start,
-                linked_binaries
-            ]
+        runscripts_paths = get_glob_paths(
+            glob_str=[run_dir, 'input', 'terrsysmp_*_job.sh'],
+            upstream_tasks=[namelist_paths]
         )
+        slurm_pids = submit_script.map(runscripts_paths)
         pids_running = check_slurm_running(pids=slurm_pids, sleep_time=5.0)
         output_dirs = check_output_files.map(
             output_folder=output_dirs,
