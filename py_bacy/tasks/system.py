@@ -11,7 +11,6 @@
 
 
 # System modules
-import logging
 import os
 from typing import List, Iterable, Union
 import tempfile
@@ -23,9 +22,6 @@ import prefect
 from prefect import task
 
 # Internal modules
-
-
-logger = logging.getLogger(__name__)
 
 
 __all__ = [
