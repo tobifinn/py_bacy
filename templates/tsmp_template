@@ -30,12 +30,6 @@ clm_start_sec=%CLM_START_SEC%
 clm_steps=%CLM_STEPS%
 clm_out_ts=%CLM_OUT_TS%
 
-proc_shift=$(((($ens_mem - 1) % $n_runs) * 72))
-cos_start_proc=$(($proc_shift+0))
-cos_end_proc=$(($proc_shift+62))
-clm_start_proc=$(($proc_shift+63))
-clm_end_proc=$(($proc_shift+71))
-
 oas_int=$(($h_int*3600+$clm_dt))
 
 account=%ACCOUNT%
@@ -43,8 +37,8 @@ partition=%PARTITION%
 
 
 # wall clock time
-wall_clock_time_tot=$((2*$h_int*$n_runs))
-wall_clock_time_tot=$(( $wall_clock_time_tot > 20 ? $wall_clock_time_tot : 20 ))
+wall_clock_time_tot=$((5*$h_int))
+wall_clock_time_tot=$(( $wall_clock_time_tot > 10 ? $wall_clock_time_tot : 10 ))
 wall_clock_time_h=$(($wall_clock_time_tot/60))
 wall_clock_time_h=`echo ${wall_clock_time_h} | awk '{printf "%.0f", $0;}'`
 wall_clock_time_min=$(($wall_clock_time_tot-$wall_clock_time_h*60))
@@ -619,6 +613,7 @@ cat > %NAME%_${ens_dir}_job.sh << end_start_job
 #SBATCH --account=${account}
 #SBATCH --nodes=${n_runs}
 #SBATCH --ntasks-per-node=72
+#SBATCH --qos=express
 #SBATCH --output=${LOGDIR}/out_%j.out
 #SBATCH --error=${LOGDIR}/err_%j.out
 #SBATCH --time=${wall_clock_time_h}:${wall_clock_time_min}:00
