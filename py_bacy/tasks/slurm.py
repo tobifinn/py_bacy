@@ -14,6 +14,7 @@
 import subprocess
 from typing import Dict, List
 import time
+import re
 
 # External modules
 import prefect
@@ -34,9 +35,11 @@ __all__ = [
 def submit_script(
         script_path: str
 ) -> str:
-    call_args = ['sbatch', script_path, '|', 'grep', '-o', '[0-9]*']
+    call_args = ['sbatch', script_path]
     output = subprocess.run(call_args, capture_output=True)
-    return output.stdout.decode('utf-8')
+    output_str = output.stdout.decode('utf-8')
+    pid_str = re.findall(r'\b\d+\b', output_str)[0]
+    return pid_str
 
 
 @task
