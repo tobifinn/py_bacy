@@ -680,5 +680,4 @@ exit 0
 end_start_job
 
 chmod u+x %NAME%_${ens_dir}_job.sh
-sbatch %NAME%_${ens_dir}_job.sh | grep -o '[0-9]*' >> ${SCRIPTDIR}/pid_file
 fi
