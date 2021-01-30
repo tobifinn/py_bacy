@@ -613,7 +613,6 @@ cat > %NAME%_${ens_dir}_job.sh << end_start_job
 #SBATCH --account=${account}
 #SBATCH --nodes=${n_runs}
 #SBATCH --ntasks-per-node=72
-#SBATCH --qos=express
 #SBATCH --output=${LOGDIR}/out_%j.out
 #SBATCH --error=${LOGDIR}/err_%j.out
 #SBATCH --time=${wall_clock_time_h}:${wall_clock_time_min}:00
