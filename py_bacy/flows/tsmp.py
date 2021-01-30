@@ -145,7 +145,7 @@ def get_tsmp_flow():
         )
 
         runscripts_paths = get_glob_paths(
-            glob_str=[run_dir, 'input', 'terrsysmp_*_job.sh'],
+            glob_str=[run_dir, 'input', '*_job.sh'],
             upstream_tasks=[namelist_paths]
         )
         slurm_pids = submit_script.map(runscripts_paths)
