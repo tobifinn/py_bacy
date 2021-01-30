@@ -13,9 +13,10 @@
 # System modules
 import logging
 import os
-from typing import List, Iterable
+from typing import List, Iterable, Union
 import tempfile
 import shutil
+import glob
 
 # External modules
 import prefect
@@ -32,6 +33,7 @@ __all__ = [
     'symlink',
     'create_folders',
     'create_directory_structure',
+    'get_glob_paths'
 ]
 
 
@@ -181,4 +183,27 @@ def create_directory_structure(
     return created_directories
 
 
+@task
+def get_glob_paths(
+        glob_str: Union[str, List[str]]
+) -> List[str]:
+    """
+    Evaluate a given glob string with `glob.glob`.
 
+    Parameters
+    ----------
+    glob_str : str or List of str
+        This glob string will be evaluated. If a list of string is given,
+        these will be joined with os.path.join before they are evaluated.
+
+    Returns
+    -------
+    list_paths : list of str
+        These are the found and sorted paths.
+    """
+    if isinstance(glob_str, list):
+        glob_str = os.path.join(*glob_str)
+    found_paths = glob.glob(glob_str)
+    sorted_paths = sorted(found_paths)
+    list_paths = list(sorted_paths)
+    return list_paths
