@@ -201,9 +201,12 @@ def get_glob_paths(
     list_paths : list of str
         These are the found and sorted paths.
     """
+    logger = prefect.context.get('logger')
     if isinstance(glob_str, list):
         glob_str = os.path.join(*glob_str)
+    logger.debug('Got {0:s} as glob path'.format(glob_str))
     found_paths = glob.glob(glob_str)
     sorted_paths = sorted(found_paths)
     list_paths = list(sorted_paths)
+    logger.debug('Found {0} as files'.format(list_paths))
     return list_paths
