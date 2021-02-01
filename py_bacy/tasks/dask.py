@@ -109,6 +109,7 @@ def initialize_slurm_cluster(
         },
     )
     client = Client(cluster)
+    client.wait_for_workers(n_workers=1)
     logger = prefect.context.get('logger')
     logger.info(
         'Initialized slum cluster: {0:s} with {1:d} workers'.format(
