@@ -98,6 +98,7 @@ def initialize_slurm_cluster(
         queue=cycle_config['EXPERIMENT']['partition'],
         walltime=cycle_config['CLUSTER']['wallclock'],
         n_workers=cycle_config['CLUSTER']['n_workers'],
+        local_directory='/tmp',
         threads_per_worker=1,
         nanny=True,
         env_extra=[
@@ -148,8 +149,9 @@ def initialize_local_cluster(
     logger.debug('I will initialize local cluster now')
     cluster = LocalCluster(
         n_workers=cycle_config['CLUSTER']['n_workers'],
-        threads_per_worker=1, log_directory='/tmp',
+        threads_per_worker=1, local_directory='/tmp',
         dashboard_address=cycle_config['CLUSTER']['dashport'],
+        log_directory=cycle_config['CLUSTER']['log_dir'],
     )
     logger.debug('Initialized cluster, I will initialize client now')
     client = Client(cluster)
@@ -178,7 +180,7 @@ def initialize_none_cluster() -> Tuple[Client, LocalCluster]:
         The initialized cluster with a single worker.
     """
     cluster = LocalCluster(
-        n_workers=1, threads_per_worker=1, log_directory='/tmp',
+        n_workers=1, threads_per_worker=1, local_directory='/tmp',
     )
     client = Client(cluster)
     logger = prefect.context.get('logger')
