@@ -152,6 +152,7 @@ def initialize_local_cluster(
         threads_per_worker=1, local_directory='/tmp',
         dashboard_address=cycle_config['CLUSTER']['dashport'],
         log_directory=cycle_config['CLUSTER']['log_dir'],
+        host=os.environ['HOSTNAME']
     )
     logger.debug('Initialized cluster, I will initialize client now')
     client = Client(cluster)
@@ -180,7 +181,9 @@ def initialize_none_cluster() -> Tuple[Client, LocalCluster]:
         The initialized cluster with a single worker.
     """
     cluster = LocalCluster(
-        n_workers=1, threads_per_worker=1, local_directory='/tmp',
+        n_workers=1,
+        threads_per_worker=1, local_directory='/tmp',
+        host=os.environ['HOSTNAME']
     )
     client = Client(cluster)
     logger = prefect.context.get('logger')
