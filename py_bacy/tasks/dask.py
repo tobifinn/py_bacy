@@ -146,13 +146,17 @@ def initialize_local_cluster(
         The initialized local cluster.
     """
     logger = prefect.context.get('logger')
-    logger.debug('I will initialize local cluster now')
+    logger.debug(
+        'I will initialize local cluster now with:'
+        '{0:d} n_workers and {1:s} as dashboard address'.format(
+            cycle_config['CLUSTER']['n_workers'],
+            cycle_config['CLUSTER']['dashport']
+        )
+    )
     cluster = LocalCluster(
         n_workers=cycle_config['CLUSTER']['n_workers'],
         threads_per_worker=1, local_directory='/tmp',
         dashboard_address=cycle_config['CLUSTER']['dashport'],
-        log_directory=cycle_config['CLUSTER']['log_dir'],
-        host=os.environ['HOSTNAME']
     )
     logger.debug('Initialized cluster, I will initialize client now')
     client = Client(cluster)
