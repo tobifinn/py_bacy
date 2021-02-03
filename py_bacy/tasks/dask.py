@@ -100,6 +100,7 @@ def initialize_slurm_cluster(
         n_workers=cycle_config['CLUSTER']['n_workers'],
         local_directory='/tmp',
         threads_per_worker=1,
+        death_timeout=180,
         nanny=True,
         env_extra=[
             'export OMP_NUM_THREADS=1',
