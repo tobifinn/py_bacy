@@ -203,10 +203,13 @@ def average_ensemble_dataset(
         ]
     for var_name in ensemble_variables:
         axis_ens = model_dataset[var_name].get_axis_num('ensemble')
-        mean_array = model_dataset[var_name].mean('ensemble')
-        expanded_array = mean_array.expand_dims(
-            ensemble=model_dataset[var_name].indexes['ensemble'],
-            axis=axis_ens
-        )
-        model_dataset = model_dataset.assign({var_name: expanded_array})
+        try:
+            mean_array = model_dataset[var_name].mean('ensemble')
+            expanded_array = mean_array.expand_dims(
+                ensemble=model_dataset[var_name].indexes['ensemble'],
+                axis=axis_ens
+            )
+            model_dataset = model_dataset.assign({var_name: expanded_array})
+        except (TypeError, ValueError):
+            pass
     return model_dataset
