@@ -39,7 +39,8 @@ __all__ = [
     'assimilate',
     'align_obs_first_guess',
     'link_analysis',
-    'default_post_process_obs'
+    'default_post_process_obs',
+    'average_ensemble_dataset'
 ]
 
 
