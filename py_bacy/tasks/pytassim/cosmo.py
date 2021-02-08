@@ -87,6 +87,19 @@ def link_background(
 
 
 @task
+def load_cos_restart_files(
+        bg_files: List[str],
+        ens_members: List[int],
+        client: Client
+) -> xr.Dataset:
+    ds_cosmo = load_ens_data.run(
+        file_paths=bg_files, client=client
+    )
+    ds_cosmo['ensemble'] = ens_members
+    return ds_cosmo
+
+
+@task
 def load_background(
         bg_files: List[str],
         analysis_time: pd.Timestamp,
@@ -95,10 +108,11 @@ def load_background(
         ens_members: List[int],
         client: Client,
 ) -> Tuple[xr.Dataset, xr.DataArray]:
-    ds_cosmo = load_ens_data.run(
-        file_paths=bg_files, client=client
+    ds_cosmo = load_cos_restart_files.run(
+        bg_files=bg_files,
+        ens_members=ens_members,
+        client=client
     )
-    ds_cosmo['ensemble'] = ens_members
     background = preprocess_cosmo(ds_cosmo, assim_config['assim_vars'])
     background = background.load()
     return ds_cosmo, background
