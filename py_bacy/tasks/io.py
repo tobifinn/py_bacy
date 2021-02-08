@@ -172,6 +172,7 @@ def write_ens_data(
         logger.warning('No client was given, I try to infer the client')
         client = get_client(timeout=10)
     ens_delayed_list = []
+    logger.info('I\'ll write {0} to the datasets'.format(assim_vars))
     for member_num, source_path in enumerate(source_paths):
         dataset_scattered = client.scatter(
             dataset_to_write.isel(ensemble=member_num)
