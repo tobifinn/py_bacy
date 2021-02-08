@@ -192,6 +192,7 @@ def average_ensemble_dataset(
         model_dataset: xr.Dataset,
         vars_to_skip: Union[None, List[str]] = None
 ):
+    logger = prefect.context.get('logger')
     ensemble_variables = [
         var_name for var_name in model_dataset.data_vars.keys()
         if 'ensemble' in model_dataset[var_name].dims
@@ -210,6 +211,7 @@ def average_ensemble_dataset(
                 axis=axis_ens
             )
             model_dataset = model_dataset.assign({var_name: expanded_array})
+            logger.debug('Successfully averaged {0:s}'.format(var_name))
         except (TypeError, ValueError):
             pass
     return model_dataset
