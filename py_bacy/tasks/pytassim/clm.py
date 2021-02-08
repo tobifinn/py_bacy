@@ -11,7 +11,7 @@
 
 
 # System modules
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Union
 import os.path
 import glob
 
@@ -173,7 +173,7 @@ def write_analysis(
         background_files: List[str],
         output_dirs: List[str],
         analysis_time: pd.Timestamp,
-        assim_config: Dict[str, Any],
+        assim_config: Union[Dict[str, Any], None],
         cycle_config: Dict[str, Any],
         client: Client,
 ) -> Tuple[List[str], xr.Dataset]:
@@ -181,11 +181,15 @@ def write_analysis(
     analysis_files = [
         os.path.join(output_dir, analysis_fname) for output_dir in output_dirs
     ]
+    if assim_config is None:
+        assim_vars = list(analysis.data_vars.keys())
+    else:
+        assim_vars = assim_config['assim_vars']
     _ = write_ens_data.run(
         analysis,
         background_files,
         analysis_files,
-        assim_config['assim_vars'],
+        assim_vars,
         client=client
     )
     return analysis_files, analysis
