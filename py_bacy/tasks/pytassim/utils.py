@@ -184,3 +184,28 @@ def default_post_process_obs(
         first_guess: Union[None, xr.DataArray] = None
 ) -> Tuple[List[xr.Dataset], Union[None, xr.DataArray]]:
     return observations, first_guess
+
+
+@task
+def average_ensemble_dataset(
+        model_dataset: xr.Dataset,
+        vars_to_skip: Union[None, List[str]] = None
+):
+    ensemble_variables = [
+        var_name for var_name in model_dataset.data_vars.keys()
+        if 'ensemble' in model_dataset[var_name].dims
+    ]
+    if vars_to_skip is not None:
+        ensemble_variables = [
+            var_name for var_name in ensemble_variables
+            if var_name not in vars_to_skip
+        ]
+    for var_name in ensemble_variables:
+        axis_ens = model_dataset[var_name].get_axis_num('ensemble')
+        mean_array = model_dataset[var_name].mean('ensemble')
+        expanded_array = mean_array.expand_dims(
+            ensemble=model_dataset[var_name].indexes['ensemble'],
+            axis=axis_ens
+        )
+        model_dataset = model_dataset.assign({var_name: expanded_array})
+    return model_dataset
