@@ -618,6 +618,15 @@ cat > %NAME%_${ens_dir}_job.sh << end_start_job
 #SBATCH --time=${wall_clock_time_h}:${wall_clock_time_min}:00
 #SBATCH --partition=${partition}
 #SBATCH --mail-type=NONE
+end_start_job
+
+if [[ $wall_clock_time_tot -le 20 ]] && [[ $n_runs -le 4]]; then
+cat >> %NAME%_${ens_dir}_job.sh <<end_start_job
+#SBATCH --qos=express
+end_start_job
+fi
+
+cat >> %NAME%_${ens_dir}_job.sh <<end_start_job
 
 START_ENS=${ens_mem}
 END_ENS=$((${ens_mem}+${n_runs}))
