@@ -620,7 +620,7 @@ cat > %NAME%_${ens_dir}_job.sh << end_start_job
 #SBATCH --mail-type=NONE
 end_start_job
 
-if [[ $wall_clock_time_tot -le 20 ]] && [[ $n_runs -le 4]]; then
+if [[ $wall_clock_time_tot -le 20 && $n_runs -le 4 ]]; then
 cat >> %NAME%_${ens_dir}_job.sh <<end_start_job
 #SBATCH --qos=express
 end_start_job
