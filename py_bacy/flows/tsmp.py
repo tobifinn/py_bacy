@@ -150,7 +150,7 @@ def get_tsmp_flow():
         )
         slurm_pids = submit_script.map(runscripts_paths)
         pids_running = check_slurm_running(pids=slurm_pids, sleep_time=5.0)
-        output_dirs = check_output_files.map(
+        found_n_files = check_output_files.map(
             output_folder=output_dirs,
             file_regex=unmapped([
                 'clmoas.clm2.h0.*.nc',
@@ -160,6 +160,8 @@ def get_tsmp_flow():
             ]),
             upstream_tasks=[unmapped(pids_running)]
         )
+        checked_files = check_number_files(n_files=found_n_files,
+                                           output_folder=output_dirs)
     return tsmp_run
 
 
