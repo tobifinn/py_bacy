@@ -161,7 +161,7 @@ def get_tsmp_flow():
             upstream_tasks=[unmapped(pids_running)]
         )
         checked_files = check_number_files(n_files=found_n_files,
-                                           output_folder=output_dirs)
+                                           output_folders=output_dirs)
     return tsmp_run
 
 
