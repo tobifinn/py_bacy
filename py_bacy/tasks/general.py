@@ -36,6 +36,7 @@ __all__ = [
     'construct_rundir',
     'construct_ensemble',
     'check_output_files',
+    'check_number_files',
     'create_analysis_dir'
 ]
 
@@ -262,7 +263,7 @@ def construct_ensemble(cycle_config: [str, Any]) -> Tuple[List[str], List[int]]:
 def check_output_files(
         output_folder: str,
         file_regex: Iterable[str]
-) -> str:
+) -> List[int]:
     """
     Check if given files can be found within given output folder, based on
     given file regexes.
@@ -278,16 +279,42 @@ def check_output_files(
 
     Returns
     -------
-    output_folder : str
-        The given output folder which was checked.
+    n_files : list[int]
+        The number of files within a directory.
     """
+    n_files = []
     for regex in file_regex:
         curr_path = os.path.join(output_folder, regex)
         avail_files = list(glob.glob(curr_path))
         if not avail_files:
             raise OSError('No available files under regex {0:s} '
                           'found!'.format(curr_path))
-    return output_folder
+        n_files.append(len(avail_files))
+    return n_files
+
+
+@task
+def check_number_files(n_files: List[List[int]], output_folders: List[str]):
+    """
+    Check if the number of files for every found regex in a output folder
+    matches with the number of files from another output folder.
+
+    Parameters
+    ----------
+    n_files : List[List[int]]
+        The list of the number of files for every output folder.
+    output_folders : List[str]
+        The output folders that were previously checked.
+    """
+    for k, n_files_list in enumerate(n_files):
+        if not n_files_list == n_files[0]:
+            raise ValueError(
+                'The {0:d}-th folder has another number of files {1:s}: {2} '
+                'than the first folder {3:s}: {4}'.format(
+                    k, output_folders[k], n_files_list,
+                    output_folders[0], n_files[0]
+                )
+            )
 
 
 @task
