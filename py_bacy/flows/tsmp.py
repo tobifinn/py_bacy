@@ -135,7 +135,7 @@ def get_tsmp_flow():
             namelist_name=unmapped('tsmp_run.nml'),
             namelist=unmapped(modified_namelist)
         )
-        namelist_paths = initialize_namelist.map(
+        called_namelists = initialize_namelist.map(
             namelist_path=namelist_paths, ens_mem=ens_range,
             upstream_tasks=[
                 unmapped(linked_binaries),
@@ -146,7 +146,7 @@ def get_tsmp_flow():
 
         runscripts_paths = get_glob_paths(
             glob_str=[run_dir, 'input', '*_job.sh'],
-            upstream_tasks=[namelist_paths]
+            upstream_tasks=[called_namelists]
         )
         slurm_pids = submit_script.map(runscripts_paths)
         pids_running = check_slurm_running(pids=slurm_pids, sleep_time=5.0)
