@@ -232,7 +232,26 @@ class Cycle(object):
         check_if_folder_exist_create(obs_target_path)
         try:
             with tarfile.open(obs_source, mode='r:gz') as tar:
-                tar.extractall(path=obs_target_path)
+                def is_within_directory(directory, target):
+                    
+                    abs_directory = os.path.abspath(directory)
+                    abs_target = os.path.abspath(target)
+                
+                    prefix = os.path.commonprefix([abs_directory, abs_target])
+                    
+                    return prefix == abs_directory
+                
+                def safe_extract(tar, path=".", members=None, *, numeric_owner=False):
+                
+                    for member in tar.getmembers():
+                        member_path = os.path.join(path, member.name)
+                        if not is_within_directory(path, member_path):
+                            raise Exception("Attempted Path Traversal in Tar File")
+                
+                    tar.extractall(path, members, numeric_owner=numeric_owner) 
+                    
+                
+                safe_extract(tar, path=obs_target_path)
         except Exception as e:
             raise ValueError('The tar file {0:s} couldn\'t be extracted to '
                              '{1:s}, due to {2}'.format(obs_source,
